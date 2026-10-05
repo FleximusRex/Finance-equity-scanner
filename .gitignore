@@ -1,4 +1,16 @@
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Downloaded data (re-created on first run)
 data/cache/*
 !data/cache/.gitkeep
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
