@@ -6,3 +6,4 @@ yfinance>=0.2.40
 matplotlib>=3.7
 plotly>=5.15
 pytest>=7.4
+lxml>=4.9

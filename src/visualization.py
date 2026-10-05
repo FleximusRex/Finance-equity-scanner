@@ -1,4 +1,4 @@
-"""Static matplotlib charts saved to outputs/charts/."""
+"""Static matplotlib charts saved to outputs/<universe>/charts/."""
 from __future__ import annotations
 
 import logging
