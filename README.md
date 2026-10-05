@@ -187,12 +187,15 @@ python -m src.rank             # current 5-category ranking -> outputs/sp500/ran
 python -m src.backtest         # backtest + factor tests  -> outputs/sp500/{backtest_*,factor_tests}.csv
 python -m src.visualization    # charts                  -> outputs/sp500/charts/
 python -c "from src.report import stock_report; stock_report('AAPL')"  # single-stock report
+python -m src.dashboard      # Equity Factor Lab web app -> docs/index.html (reads outputs/, no downloads)
 
 UNIVERSE_MODE=test50 python -m src.backtest   # same pipeline on the 50-stock test set
 pytest -q                                      # unit tests (scoring, no look-ahead)
 ```
 
 The first run downloads and caches data. Later runs read from `data/cache/`.
+
+**Interactive app:** `docs/index.html` is a single self-contained page (all data embedded). Open it locally or serve it with GitHub Pages (Settings → Pages → `main` / `docs`). It has Basic and Advanced modes, rankings, stock lookup, a 3D factor-space view, the backtest and the factor tests.
 
 ## Repository structure
 
@@ -208,7 +211,9 @@ Finance-equity-scanner/
 │   ├── backtest.py        # monthly quintile backtest, costs, factor-by-factor tests
 │   ├── performance.py     # CAGR, Sharpe, drawdown, alpha/beta, rank IC, t-tests
 │   ├── visualization.py   # matplotlib charts
-│   └── report.py          # single-stock report
+│   ├── report.py          # single-stock report
+│   ├── dashboard.py       # builds docs/index.html from outputs/ CSVs
+│   └── dashboard_template.html  # app UI (HTML/CSS/JS, inline-SVG charts, three.js 3D view)
 ├── tests/test_scoring.py
 ├── notebooks/multi_factor_equity_screener.ipynb
 ├── outputs/
