@@ -16,10 +16,13 @@ from src.data_loader import load_prices
 from src.factors import price_factors
 from src.performance import ic_stats, perf_stats, rank_ic
 from src.scoring import score
+from src.universe import get_universe
 
 log = logging.getLogger("backtest")
 PRICE_CATEGORIES = ["momentum", "low_vol"]
 QUINTILES = [f"Q{i}" for i in range(1, 6)]
+# single price factors tested alone: column -> sign (+1 = higher is better)
+SINGLE_FACTORS = {"mom_12_1": 1, "ret_6m": 1, "vol_60d": -1, "beta": -1}
 
 
 def rebalance_dates(index: pd.DatetimeIndex) -> pd.DatetimeIndex:
@@ -28,18 +31,27 @@ def rebalance_dates(index: pd.DatetimeIndex) -> pd.DatetimeIndex:
     return pd.DatetimeIndex(s.groupby(index.to_period("M")).max().to_numpy())
 
 
-def scores_through_time(prices: pd.DataFrame, dates: pd.DatetimeIndex) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Composite score and quintile per (date, ticker), using only data up to each date."""
-    comp, quint = {}, {}
+def signals_through_time(prices: pd.DataFrame, dates: pd.DatetimeIndex) -> dict[str, pd.DataFrame]:
+    """Composite and signed single-factor signals per (date, ticker), using only data up to each date."""
+    panels: dict[str, dict] = {k: {} for k in ["composite", *SINGLE_FACTORS]}
     for d in dates:
         try:
-            sc = score(price_factors(prices, config.BENCHMARK, asof=d), categories=PRICE_CATEGORIES)
+            pf = price_factors(prices, config.BENCHMARK, asof=d)
+            sc = score(pf, categories=PRICE_CATEGORIES)
         except Exception as e:  # noqa: BLE001
             log.warning("skip %s: %s", d.date(), e)
             continue
-        if sc["quintile"].notna().sum() >= 5:
-            comp[d], quint[d] = sc["composite"], sc["quintile"]
-    return pd.DataFrame(comp).T, pd.DataFrame(quint).T
+        panels["composite"][d] = sc["composite"]
+        for f, sign in SINGLE_FACTORS.items():  # ranks are invariant to winsor/z-score
+            panels[f][d] = pf[f] * sign
+    return {k: pd.DataFrame(v).T for k, v in panels.items()}
+
+
+def quintiles(sig: pd.DataFrame) -> pd.DataFrame:
+    """Cross-sectional quintile per date (1 = highest signal); NaN on dates with <5 names."""
+    order = sig.rank(axis=1, ascending=False, method="first")
+    n = order.count(axis=1)
+    return np.ceil(order.mul(5).div(n, axis=0)).where(n >= 5, axis=0)
 
 
 def _turnover(w: pd.DataFrame, fwd: pd.DataFrame) -> pd.Series:
@@ -49,18 +61,18 @@ def _turnover(w: pd.DataFrame, fwd: pd.DataFrame) -> pd.Series:
     return 0.5 * (w - drift).abs().sum(axis=1)
 
 
-def run_backtest(prices: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
-    """Monthly gross/net returns + turnover per portfolio, and the rank-IC series."""
+def backtest_signal(prices: pd.DataFrame, sig: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
+    """Monthly gross/net returns + turnover per quintile portfolio of `sig`, and its rank-IC series."""
     dates = rebalance_dates(prices.index)
-    stocks = prices.drop(columns=config.BENCHMARK, errors="ignore")
     px_m = prices.ffill(limit=5).reindex(dates)
     fwd_all = (px_m.shift(-1) / px_m - 1).replace([np.inf, -np.inf], np.nan)
-    fwd = fwd_all[stocks.columns]
 
-    comp, quint = scores_through_time(prices, dates[:-1])
+    quint = quintiles(sig)
+    keep = quint.notna().any(axis=1)
+    comp, quint = sig[keep], quint[keep]
     if comp.empty:
         raise RuntimeError("no rebalance date had enough scored stocks")
-    fwd = fwd.reindex(index=comp.index, columns=comp.columns)
+    fwd = fwd_all.reindex(index=comp.index, columns=comp.columns)
     held = fwd.notna()  # names without a next-month price are excluded
 
     cost = config.TRANSACTION_COST_BPS / 1e4
@@ -86,6 +98,30 @@ def run_backtest(prices: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
     return monthly, ic
 
 
+def run_backtest(prices: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
+    """Backtest of the price-factor composite (momentum + low vol)."""
+    sigs = signals_through_time(prices, rebalance_dates(prices.index)[:-1])
+    return backtest_signal(prices, sigs["composite"])
+
+
+def factor_tests(prices: pd.DataFrame, sigs: dict[str, pd.DataFrame] | None = None) -> pd.DataFrame:
+    """IC and quintile CAGR stats for each single price factor and the composite (net of costs)."""
+    sigs = sigs or signals_through_time(prices, rebalance_dates(prices.index)[:-1])
+    rows = {}
+    for name in [*SINGLE_FACTORS, "composite"]:
+        try:
+            monthly, ic = backtest_signal(prices, sigs[name])
+        except RuntimeError as e:
+            log.warning("factor %s: %s", name, e)
+            continue
+        fs = ic_stats(ic, monthly["LS_gross"])
+        cagr = {p: perf_stats(monthly[f"{p}_net"]).get("CAGR", np.nan) for p in ("Q1", "Q5", "LS")}
+        rows[name] = {"IC_mean": fs["IC_mean"], "IC_t": fs["IC_t"], "IC_p": fs["IC_p"],
+                      "Q1_CAGR": cagr["Q1"], "Q5_CAGR": cagr["Q5"], "LS_CAGR": cagr["LS"],
+                      "Months": fs["Months"]}
+    return pd.DataFrame(rows).T.rename_axis("factor")
+
+
 def summarize(monthly: pd.DataFrame, ic: pd.Series) -> tuple[pd.DataFrame, dict[str, float]]:
     """Performance table (rows = portfolios) and factor IC stats."""
     bench = monthly["SPY"]
@@ -100,12 +136,13 @@ def summarize(monthly: pd.DataFrame, ic: pd.Series) -> tuple[pd.DataFrame, dict[
 def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     logging.getLogger("yfinance").setLevel(logging.CRITICAL)
-    prices = load_prices(config.UNIVERSE + [config.BENCHMARK])
+    prices = load_prices(get_universe() + [config.BENCHMARK])
     if prices.empty:
         log.error("no price data available")
         return 1
     try:
-        monthly, ic = run_backtest(prices)
+        sigs = signals_through_time(prices, rebalance_dates(prices.index)[:-1])
+        monthly, ic = backtest_signal(prices, sigs["composite"])
     except RuntimeError as e:
         log.error("%s", e)
         return 1
@@ -117,9 +154,13 @@ def main() -> int:
 
     show = ["Q1_net", "Q2_net", "Q3_net", "Q4_net", "Q5_net", "LS_net", "LS_gross", "EW_net", "SPY"]
     cols = ["CAGR", "AnnVol", "Sharpe", "MaxDD", "Beta", "Alpha", "InfoRatio", "AvgTurnover"]
-    log.info("%d months %s..%s", len(monthly), monthly.index[0].date(), monthly.index[-1].date())
+    log.info("universe=%s  %d months %s..%s", config.UNIVERSE_MODE, len(monthly), monthly.index[0].date(), monthly.index[-1].date())
     print(table.loc[show, cols].round(3).to_string())
     print("  ".join(f"{k}={v:.3f}" for k, v in fstats.items() if k != "Months"))
+
+    ft = factor_tests(prices, sigs)
+    ft.round(4).to_csv(config.OUTPUTS_DIR / "factor_tests.csv")
+    print(ft.drop(columns="Months").round(3).to_string())
     return 0
 
 
