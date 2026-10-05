@@ -5,6 +5,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CACHE_DIR = ROOT / "data" / "cache"
 CHARTS_DIR = ROOT / "outputs" / "charts"
 RANKINGS_DIR = ROOT / "outputs" / "rankings"
+OUTPUTS_DIR = ROOT / "outputs"
 
 START_DATE = "2014-01-01"
 END_DATE: str | None = None  # None = latest available
