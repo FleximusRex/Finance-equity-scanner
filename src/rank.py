@@ -10,6 +10,7 @@ from src import config
 from src.data_loader import load_fundamentals, load_prices
 from src.factors import compute_factors
 from src.scoring import score
+from src.universe import get_universe
 
 log = logging.getLogger("rank")
 
@@ -22,8 +23,9 @@ COLUMNS = {
 }
 
 
-def build_rankings(tickers: list[str] = config.UNIVERSE) -> pd.DataFrame:
+def build_rankings(tickers: list[str] | None = None) -> pd.DataFrame:
     """Download (or load cached) data, compute factors and return the ranking table."""
+    tickers = tickers or get_universe()
     prices = load_prices(tickers + [config.BENCHMARK])
     fund = load_fundamentals(tickers)
     if prices.empty and fund.empty:

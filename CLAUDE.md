@@ -10,7 +10,7 @@ Working style (important — I am on a tight credit budget):
 - Type hints + short docstrings. Vectorized pandas, no slow loops.
 
 Design:
-- src/config.py: START_DATE, END_DATE, BENCHMARK="SPY", UNIVERSE (50 large-cap US tickers across sectors), REBALANCE="M", TRANSACTION_COST_BPS=10, MIN_PRICE_HISTORY=252, WINSOR=(0.01,0.99), FACTOR_WEIGHTS={value:.25, quality:.25, momentum:.25, growth:.15, low_vol:.10}.
+- src/config.py: UNIVERSE_MODE ("test50" | "sp500", env-overridable; outputs go to outputs/<mode>/), START_DATE, END_DATE, BENCHMARK="SPY", UNIVERSE (50 large-cap US tickers across sectors), REBALANCE="M", TRANSACTION_COST_BPS=10, MIN_PRICE_HISTORY=252, WINSOR=(0.01,0.99), FACTOR_WEIGHTS={value:.25, quality:.25, momentum:.25, growth:.15, low_vol:.10}.
 - Factors (higher score = better; flip sign where lower is better):
   Value: earnings yield, FCF yield, EV/EBITDA (inverted)
   Quality: ROE, gross margin, debt/equity (inverted)
