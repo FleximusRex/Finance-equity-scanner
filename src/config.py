@@ -1,11 +1,19 @@
 """Project-wide configuration."""
+import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CACHE_DIR = ROOT / "data" / "cache"
-CHARTS_DIR = ROOT / "outputs" / "charts"
-RANKINGS_DIR = ROOT / "outputs" / "rankings"
-OUTPUTS_DIR = ROOT / "outputs"
+
+# "test50" = UNIVERSE below; "sp500" = current S&P 500 list from Wikipedia (cached).
+# Override per run with env var, e.g. UNIVERSE_MODE=test50 python -m src.backtest
+UNIVERSE_MODE = os.getenv("UNIVERSE_MODE", "sp500")
+if UNIVERSE_MODE not in ("test50", "sp500"):
+    raise ValueError(f"UNIVERSE_MODE must be 'test50' or 'sp500', got {UNIVERSE_MODE!r}")
+
+OUTPUTS_DIR = ROOT / "outputs" / UNIVERSE_MODE
+CHARTS_DIR = OUTPUTS_DIR / "charts"
+RANKINGS_DIR = OUTPUTS_DIR / "rankings"
 
 START_DATE = "2014-01-01"
 END_DATE: str | None = None  # None = latest available
