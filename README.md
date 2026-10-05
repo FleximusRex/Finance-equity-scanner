@@ -83,14 +83,14 @@ All downloads are cached as parquet and are never downloaded again once cached. 
 
 ## Charts
 
-The charts below are from the 50-stock run (`outputs/charts/`). The same set for the S&P 500 is in [`outputs/sp500/charts/`](outputs/sp500/charts/).
+The charts below are from the S&P 500 run (`outputs/sp500/charts/`), matching the tables that follow. The same set for the 50-stock universe is in [`outputs/test50/charts/`](outputs/test50/charts/).
 
 | | |
 |---|---|
-| ![Leaderboard](outputs/charts/01_leaderboard.png) | ![Factor heatmap](outputs/charts/02_factor_heatmap.png) |
-| ![Quintile cumulative returns](outputs/charts/03_quintile_cumulative.png) | ![Strategy vs SPY](outputs/charts/04_strategy_vs_spy.png) |
-| ![Rolling Sharpe](outputs/charts/05_rolling_sharpe.png) | ![Rank IC](outputs/charts/06_rank_ic.png) |
-| ![Sector exposure](outputs/charts/07_sector_exposure.png) | |
+| ![Leaderboard](outputs/sp500/charts/01_leaderboard.png) | ![Factor heatmap](outputs/sp500/charts/02_factor_heatmap.png) |
+| ![Quintile cumulative returns](outputs/sp500/charts/03_quintile_cumulative.png) | ![Strategy vs SPY](outputs/sp500/charts/04_strategy_vs_spy.png) |
+| ![Rolling Sharpe](outputs/sp500/charts/05_rolling_sharpe.png) | ![Rank IC](outputs/sp500/charts/06_rank_ic.png) |
+| ![Sector exposure](outputs/sp500/charts/07_sector_exposure.png) | |
 
 ## Backtest results: S&P 500 universe (price-factor composite, net of costs)
 
@@ -213,8 +213,7 @@ Finance-equity-scanner/
 ├── notebooks/multi_factor_equity_screener.ipynb
 ├── outputs/
 │   ├── sp500/             # S&P 500 results (rankings, backtest, factor tests, charts)
-│   ├── test50/            # 50-stock results, kept for comparison
-│   └── charts/ rankings/ backtest_*.csv   # original 50-stock run (same backtest as test50/)
+│   └── test50/            # 50-stock results, kept for comparison
 ├── data/cache/            # parquet cache (git-ignored)
 ├── requirements.txt
 └── LICENSE
