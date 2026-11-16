@@ -1,8 +1,28 @@
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/FleximusRex/Finance-equity-scanner/blob/main/notebooks/multi_factor_equity_screener.ipynb)
-
 # Multi-Factor Equity Screener
 
-A Python research pipeline that ranks US large-cap stocks on five factor categories (value, quality, momentum, growth, low volatility) and tests the price-based factors with a monthly, point-in-time quintile backtest and rank-IC statistics.
+**Sawyer Cross** · B.S.B.A. Finance, University of West Florida
+
+[![Live dashboard](https://img.shields.io/badge/Live%20dashboard-Equity%20Factor%20Lab-2A78D6)](https://fleximusrex.github.io/Finance-equity-scanner/)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/FleximusRex/Finance-equity-scanner/blob/main/notebooks/multi_factor_equity_screener.ipynb)
+![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
+![pandas](https://img.shields.io/badge/pandas-150458?logo=pandas&logoColor=white)
+![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey)
+
+A Python research pipeline that ranks all 503 S&P 500 stocks on five factor categories (value, quality, momentum, growth, low volatility) and tests whether the price-based factors actually predict returns, using a monthly, point-in-time quintile backtest with transaction costs and rank-IC statistics.
+
+## At a glance
+
+| | |
+|---|---|
+| **Universe** | 503 S&P 500 stocks (plus a 50-stock test set) |
+| **Signals** | 13 metrics across value, quality, momentum, growth and low volatility |
+| **Backtest** | 142 monthly rebalances, Dec 2014 – Sep 2026, 10 bps costs per side |
+| **Key finding** | The top quintile returned 17.8% CAGR vs. SPY's 13.6%, but an equal-weighted basket of the same stocks returned 15.7%, so most of the "edge" was survivorship bias. No price factor was statistically significant at 5%. |
+| **Deliverables** | Current stock rankings, backtest and factor-test tables, 7 charts, a single-stock report, and an interactive web dashboard |
+
+![Strategy vs SPY](outputs/sp500/charts/04_strategy_vs_spy.png)
+
+**Skills demonstrated:** factor investing, cross-sectional scoring (winsorized z-scores), backtest design without look-ahead bias, performance attribution (Sharpe, alpha/beta, information ratio, drawdown), hypothesis testing (rank IC t-tests), and Python data engineering (pandas, NumPy, SciPy, yfinance, matplotlib, pytest).
 
 ## Executive summary
 
@@ -195,7 +215,7 @@ pytest -q                                      # unit tests (scoring, no look-ah
 
 The first run downloads and caches data. Later runs read from `data/cache/`.
 
-**Interactive app:** `docs/index.html` is a single self-contained page (all data embedded). Open it locally or serve it with GitHub Pages (Settings → Pages → `main` / `docs`). It has Basic and Advanced modes, rankings, stock lookup, a 3D factor-space view, the backtest and the factor tests.
+**Interactive app:** [Equity Factor Lab](https://fleximusrex.github.io/Finance-equity-scanner/) (`docs/index.html`) is a single self-contained page with all data embedded, hosted on GitHub Pages. It has Basic and Advanced modes, rankings, stock lookup, a 3D factor-space view, the backtest and the factor tests.
 
 ## Repository structure
 
@@ -240,3 +260,7 @@ This project is for educational and research purposes only and is not investment
 ## License
 
 [MIT](LICENSE)
+
+## Author
+
+**Sawyer Cross** · Finance student, University of West Florida · [GitHub](https://github.com/FleximusRex)
