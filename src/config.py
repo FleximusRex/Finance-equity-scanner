@@ -24,7 +24,8 @@ def set_universe(mode: str) -> None:
 set_universe(UNIVERSE_MODE)
 
 START_DATE = "2014-01-01"
-END_DATE: str | None = None  # None = latest available
+END_DATE: str | None = "2026-10-06"  # exclusive; pinned so reruns reproduce outputs/. None = latest
+DATA_AS_OF = "2026-10-05"  # last trading day in the committed outputs
 BENCHMARK = "SPY"
 
 # 50 large-cap US tickers across sectors (test universe).
