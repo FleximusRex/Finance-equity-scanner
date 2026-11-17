@@ -21,17 +21,24 @@ def winsorize(df: pd.DataFrame, limits: tuple[float, float] = config.WINSOR) -> 
     return df.clip(df.quantile(limits[0]), df.quantile(limits[1]), axis=1)
 
 
-def zscore(df: pd.DataFrame) -> pd.DataFrame:
-    """Cross-sectional z-score per column (NaN if std is 0)."""
-    return (df - df.mean()) / df.std().replace(0, np.nan)
+def zscore(df: pd.DataFrame, sectors: pd.Series | None = None) -> pd.DataFrame:
+    """Cross-sectional z-score per column (NaN if std is 0); within sector if `sectors` is given."""
+    universe_wide = (df - df.mean()) / df.std().replace(0, np.nan)
+    if sectors is None:
+        return universe_wide
+    groups = df.groupby(sectors.reindex(df.index))
+    within = (df - groups.transform("mean")) / groups.transform("std").replace(0, np.nan)
+    # A z-score from a handful of names is unstable, so small sectors keep the universe-wide one.
+    enough = groups.transform("count") >= config.MIN_SECTOR_NAMES
+    return within.where(enough, universe_wide)
 
 
 def score(factors: pd.DataFrame, weights: dict[str, float] = config.FACTOR_WEIGHTS,
-          categories: list[str] | None = None) -> pd.DataFrame:
+          categories: list[str] | None = None, sectors: pd.Series | None = None) -> pd.DataFrame:
     """Category scores, composite, percentile (100 = best) and quintile (1 = best)."""
     categories = categories or list(weights)
     signs = pd.Series({c: s for cat in categories for c, s in FACTORS[cat].items()})
-    z = zscore(winsorize(factors.reindex(columns=signs.index).astype(float))) * signs
+    z = zscore(winsorize(factors.reindex(columns=signs.index).astype(float)), sectors) * signs
     out = pd.DataFrame({cat: z[list(FACTORS[cat])].mean(axis=1) for cat in categories})
 
     w = pd.Series({c: weights[c] for c in categories})
