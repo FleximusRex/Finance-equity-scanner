@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 from src.factors import price_factors
-from src.scoring import score, winsorize, zscore
+from src.scoring import FACTORS, score, winsorize, zscore
 
 
 def test_zscore_standardizes() -> None:
@@ -43,3 +43,10 @@ def test_price_factors_no_lookahead() -> None:
     shocked = px.copy()
     shocked.loc[idx > t] *= rng.uniform(0.1, 10, (99, 4))
     pd.testing.assert_frame_equal(base, price_factors(shocked, "SPY", asof=t))
+
+
+def test_metric_count_matches_documentation() -> None:
+    """The README and dashboard say 12 metrics in 5 categories; keep them in sync."""
+    counts = {cat: len(metrics) for cat, metrics in FACTORS.items()}
+    assert counts == {"value": 3, "quality": 3, "momentum": 2, "low_vol": 2, "growth": 2}
+    assert sum(counts.values()) == 12
