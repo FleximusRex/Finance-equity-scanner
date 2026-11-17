@@ -15,6 +15,7 @@ import pandas as pd
 from matplotlib.colors import LinearSegmentedColormap
 
 from src import cli, config
+from src.run_info import load_run_info
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +27,12 @@ SPY_COLOR = MUTED
 QUINTILE_COLORS = ["#1c5cab", "#86b6ef", "#a9a8a1", "#f0a09f", "#c42f2f"]
 DIVERGING = LinearSegmentedColormap.from_list("rb", [RED, "#f0efec", BLUE])
 CATEGORIES = ["Value", "Quality", "Momentum", "Growth", "LowVol"]
+UNIVERSE_TEXT = {
+    "test50": "50 large caps chosen today",
+    "sp100": "today's S&P 100 constituents",
+    "sp500": "today's S&P 500 constituents",
+}
+AS_OF: str | None = None  # last price date shown in the chart footer; set by make_all
 
 
 def _style() -> None:
@@ -43,10 +50,11 @@ def _style() -> None:
 
 
 def _footer() -> str:
-    ts = pd.Timestamp(config.DATA_AS_OF)
-    asof = f"{ts.day} {ts:%b %Y}"
-    universe = ("today's S&P 500 constituents" if config.UNIVERSE_MODE == "sp500"
-                else "50 large caps chosen today")
+    asof = "n/a"
+    if AS_OF:
+        ts = pd.Timestamp(AS_OF)
+        asof = f"{ts.day} {ts:%b %Y}"
+    universe = UNIVERSE_TEXT[config.UNIVERSE_MODE]
     return (f"Source: Yahoo Finance via yfinance. Data as of {asof}.\n"
             f"Universe is {universe} (survivorship bias).")
 
@@ -158,19 +166,21 @@ def plot_strategy_vs_spy(monthly: pd.DataFrame) -> Path:
 
 
 def plot_rolling_sharpe(monthly: pd.DataFrame, window: int = 12) -> Path:
-    """Rolling annualized Sharpe ratio (rf = 0)."""
+    """Rolling annualized Sharpe ratio on returns in excess of the T-bill rate."""
+    rf = monthly["RF"] if "RF" in monthly else 0.0
     fig, ax = plt.subplots(figsize=(9, 4.2))
     ends, colors = {}, {}
     for name, col, c in [("Q1", "Q1_net", BLUE), ("Long-short", "LS_net", ORANGE),
                          ("SPY", "SPY", SPY_COLOR)]:
-        r = monthly[col]
+        # The long-short portfolio is self-financing, so it is already an excess return.
+        r = monthly[col] if col == "LS_net" else monthly[col] - rf
         sh = r.rolling(window).mean() / r.rolling(window).std() * np.sqrt(12)
         ax.plot(sh.index, sh, color=c, label=name)
         ends[name], colors[name] = sh.dropna().iloc[-1] if sh.notna().any() else np.nan, c
     ax.axhline(0, color=AXIS, lw=0.8)
     _label_ends(ax, ends, colors)
     ax.legend(loc="upper left", ncol=3)
-    ax.set_title(f"Rolling {window}-month Sharpe ratio")
+    ax.set_title(f"Rolling {window}-month Sharpe ratio (excess returns)")
     return _save(fig, "05_rolling_sharpe.png")
 
 
@@ -206,8 +216,14 @@ def plot_sector_exposure(rank: pd.DataFrame) -> Path:
     return _save(fig, "07_sector_exposure.png")
 
 
-def make_all(rank: pd.DataFrame | None = None, monthly: pd.DataFrame | None = None) -> list[Path]:
-    """Render every chart from the saved rankings and backtest CSVs."""
+def make_all(rank: pd.DataFrame | None = None, monthly: pd.DataFrame | None = None,
+             asof: str | None = None) -> list[Path]:
+    """Render every chart from the saved rankings and backtest CSVs.
+
+    `asof` is the date printed in the footer (default: the one saved in run_info.json).
+    """
+    global AS_OF
+    AS_OF = asof or load_run_info().get("as_of")
     _style()
     if rank is None:
         rank = pd.read_csv(config.RANKINGS_DIR / "rankings.csv")

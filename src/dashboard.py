@@ -1,7 +1,7 @@
 """Build the Equity Factor Lab dashboard: one self-contained docs/index.html.
 
-Reads existing CSVs in outputs/sp500, outputs/test50 and (optionally) outputs/watchlist;
-never re-runs the pipeline. All data is embedded as JSON (NaN -> null).
+Reads the existing CSVs and run_info.json in outputs/<universe>/ and never re-runs the
+pipeline. All data is embedded as JSON (NaN -> null).
 
 Run: python -m src.dashboard
 """
@@ -14,13 +14,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from src import config
+from src.run_info import load_run_info
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "outputs"
 TEMPLATE = Path(__file__).with_name("dashboard_template.html")
 TARGET = ROOT / "docs" / "index.html"
-UNIVERSES = ("sp500", "test50")
+UNIVERSES = ("sp500", "sp100", "test50")
 CATEGORIES = ["Value", "Quality", "Momentum", "Growth", "LowVol"]
 METRICS = ["Price", "MarketCap", "Ret1M", "Ret6M", "Ret12M", "FCFYield", "EV_EBITDA",
            "Volatility", "Beta"]
@@ -98,7 +98,7 @@ def load_universe(uni: str, watch: set[str], watch_df: pd.DataFrame | None) -> d
         "tests": _records(tests) if tests is not None else None,
         "monthly": _records(monthly) if monthly is not None else None,
         "sectorMedian": _records(med.reset_index().rename(columns={"index": "Sector"})),
-        "asof": config.DATA_AS_OF,
+        "asof": load_run_info(OUT / uni).get("as_of"),
     }
 
 

@@ -1,6 +1,6 @@
 """Build the current multi-factor ranking.
 
-Run: python -m src.rank [--universe {sp500,test50}]
+Run: python -m src.rank [--universe {test50,sp100,sp500}] [--sector-neutral]
 """
 from __future__ import annotations
 
@@ -13,8 +13,9 @@ import pandas as pd
 from src import cli, config
 from src.data_loader import load_fundamentals, load_prices
 from src.factors import compute_factors
+from src.run_info import save_run_info
 from src.scoring import score
-from src.universe import get_universe
+from src.universe import get_universe, sectors
 
 log = logging.getLogger("rank")
 
@@ -27,16 +28,18 @@ COLUMNS = {
 }
 
 
-def build_rankings(tickers: list[str] | None = None) -> pd.DataFrame:
+def build_rankings(tickers: list[str] | None = None,
+                   prices: pd.DataFrame | None = None) -> pd.DataFrame:
     """Download (or load cached) data, compute factors and return the ranking table."""
     tickers = tickers or get_universe()
-    prices = load_prices([*tickers, config.BENCHMARK])
+    if prices is None:
+        prices = load_prices([*tickers, config.BENCHMARK])
     fund = load_fundamentals(tickers)
     if prices.empty and fund.empty:
         raise RuntimeError("no price or fundamental data available")
 
     factors = compute_factors(prices, fund).reindex(tickers).dropna(how="all")
-    scores = score(factors)
+    scores = score(factors, sectors=sectors() if config.SECTOR_NEUTRAL else None)
     meta = fund.reindex(factors.index, columns=["company", "sector", "market_cap", "price"])
     last_px = prices.ffill().iloc[-1] if not prices.empty else pd.Series(dtype=float)
     meta["Price"] = meta["price"].fillna(last_px.reindex(meta.index))
@@ -49,15 +52,20 @@ def build_rankings(tickers: list[str] | None = None) -> pd.DataFrame:
 def main(argv: Sequence[str] | None = None) -> int:
     cli.parse_args("Build the current multi-factor ranking.", argv)
     cli.setup_logging()
+    prices = load_prices([*get_universe(), config.BENCHMARK])
+    if prices.empty:
+        log.error("no price data available")
+        return 1
     try:
-        df = build_rankings()
+        df = build_rankings(prices=prices)
     except RuntimeError as e:
         log.error("%s", e)
         return 1
     config.RANKINGS_DIR.mkdir(parents=True, exist_ok=True)
     path = config.RANKINGS_DIR / "rankings.csv"
     df.round(4).to_csv(path, index=False)
-    log.info("saved %d rows -> %s", len(df), path)
+    info = save_run_info(prices, tickers_ranked=len(df))
+    log.info("saved %d rows -> %s (data as of %s)", len(df), path, info["as_of"])
     print(df[["Ticker", "Sector", "Composite", "Quintile"]].head(10).to_string(index=False))
     return 0
 
