@@ -219,7 +219,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     table, fstats = summarize(monthly, ic)
 
     config.OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
-    table.round(4).to_csv(config.OUTPUTS_DIR / "backtest_summary.csv", index_label="Portfolio")
+    table.round(6).to_csv(config.OUTPUTS_DIR / "backtest_summary.csv", index_label="Portfolio")
     monthly.assign(IC=ic).round(6).to_csv(config.OUTPUTS_DIR / "backtest_monthly_returns.csv")
     save_run_info(prices, tickers=int(prices.drop(columns=config.BENCHMARK).shape[1]),
                   months=len(monthly), first_month=f"{monthly.index[0]:%Y-%m}",
@@ -233,15 +233,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     print("  ".join(f"{k}={v:.3f}" for k, v in fstats.items() if k != "Months"))
 
     ft = factor_tests(prices, sigs)
-    ft.round(4).to_csv(config.OUTPUTS_DIR / "factor_tests.csv")
+    ft.round(6).to_csv(config.OUTPUTS_DIR / "factor_tests.csv")
     print(ft.drop(columns="Months").round(3).to_string())
 
     ff = ff_regression(monthly, french.load_factors())
-    ff.round(4).to_csv(config.OUTPUTS_DIR / "ff_regression.csv")
+    ff.round(6).to_csv(config.OUTPUTS_DIR / "ff_regression.csv")
     print(ff[["Alpha_ann", "Alpha_t", *french.FACTOR_COLS, "R2", "Months"]].to_string())
 
     rob = robustness_table(prices, sigs["composite"], monthly["RF"])
-    rob.round(4).to_csv(config.OUTPUTS_DIR / "robustness.csv")
+    rob.round(6).to_csv(config.OUTPUTS_DIR / "robustness.csv")
     print(rob.round(3).to_string())
     return 0
 

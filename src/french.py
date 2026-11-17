@@ -76,6 +76,6 @@ def risk_free(months: pd.DatetimeIndex) -> pd.Series:
     """Monthly risk-free rate: French RF, with ^IRX for months after the French file ends."""
     rf = load_factors()["RF"].reindex(months)
     if rf.isna().any():
-        log.info("French RF missing for %d months; using ^IRX for those", rf.isna().sum())
+        log.info("French RF does not cover %d month(s) yet; using ^IRX", rf.isna().sum())
         rf = rf.fillna(irx_monthly_rate().reindex(months))
     return rf.rename("RF")
