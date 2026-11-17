@@ -10,6 +10,8 @@ I built a Python pipeline that ranks the S&P 500 on five factor categories (valu
 
 Data as of 5 Oct 2026. Details are in [docs/methodology.md](docs/methodology.md), and there is an [interactive dashboard](https://fleximusrex.github.io/Finance-equity-scanner/) and a [Colab notebook](notebooks/multi_factor_equity_screener.ipynb).
 
+[![Equity Factor Lab dashboard, backtest tab](docs/dashboard.png)](https://fleximusrex.github.io/Finance-equity-scanner/)
+
 ## Results
 
 Monthly rebalance, Dec 2014 to Sep 2026 (142 months), 503 S&P 500 stocks, 10 bps trading cost per side. Q1 is the 20% of stocks with the best momentum and low-volatility scores. Sharpe ratios use a 0% risk-free rate.
@@ -75,12 +77,13 @@ src/
   performance.py     CAGR, Sharpe, drawdown, alpha and beta, rank IC
   visualization.py   charts
   report.py          single-stock report
-  dashboard.py       builds docs/index.html from outputs/
+  dashboard.py       builds docs/index.html from outputs/ and the template
+  dashboard_template.html  the dashboard's HTML, CSS and JS (edit this, not docs/index.html)
 tests/               unit tests, none of which use the network
 notebooks/           Colab notebook with saved outputs (50-stock run)
 outputs/sp500/       rankings, backtest and factor tables, charts
 outputs/test50/      the same tables for the 50-stock set
-docs/                dashboard (index.html) and methodology.md
+docs/                built dashboard (index.html, generated), preview image and methodology.md
 ```
 
 ## Data sources
