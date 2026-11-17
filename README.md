@@ -10,6 +10,8 @@ I built a Python pipeline that ranks US large caps on five factor categories (va
 
 Data as of 16 Nov 2026. Details are in [docs/methodology.md](docs/methodology.md), and there is an [interactive dashboard](https://fleximusrex.github.io/Finance-equity-scanner/) and a [Colab notebook](notebooks/multi_factor_equity_screener.ipynb).
 
+[![Equity Factor Lab dashboard](docs/dashboard.png)](https://fleximusrex.github.io/Finance-equity-scanner/)
+
 ## Results
 
 Monthly rebalance, 142 holding months from Jan 2015 to Oct 2026, 503 S&P 500 stocks, 10 bps (0.10%) trading cost per side. Q1 is the 20% of stocks with the best momentum and low-volatility scores. Each score is a cross-sectional z-score: how many standard deviations a stock sits above or below the average stock on the same date. Sharpe ratios use excess returns: the portfolio's return minus the 1-month T-bill rate, which averaged 2.0% a year over the period.
@@ -115,11 +117,12 @@ src/
   visualization.py   charts
   excel_export.py    Excel workbook
   report.py          single-stock report
-  dashboard.py       builds docs/index.html from outputs/
+  dashboard.py       builds docs/index.html from outputs/ and the template
+  dashboard_template.html  the dashboard's HTML, CSS and JS (edit this, not docs/index.html)
 tests/               unit tests, none of which use the network
 notebooks/           Colab notebook with saved outputs (S&P 100 run)
 outputs/<universe>/  rankings, backtest and factor tables, charts, Excel file
-docs/                dashboard (index.html) and methodology.md
+docs/                built dashboard (index.html, generated), preview image and methodology.md
 ```
 
 ## Data sources
