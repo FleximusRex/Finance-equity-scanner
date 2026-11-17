@@ -42,10 +42,22 @@ def _style() -> None:
     })
 
 
+def _footer() -> str:
+    ts = pd.Timestamp(config.DATA_AS_OF)
+    asof = f"{ts.day} {ts:%b %Y}"
+    universe = ("today's S&P 500 constituents" if config.UNIVERSE_MODE == "sp500"
+                else "50 large caps chosen today")
+    return (f"Source: Yahoo Finance via yfinance. Data as of {asof}.\n"
+            f"Universe is {universe} (survivorship bias).")
+
+
 def _save(fig: plt.Figure, name: str) -> Path:
     config.CHARTS_DIR.mkdir(parents=True, exist_ok=True)
     path = config.CHARTS_DIR / name
-    fig.savefig(path, dpi=150, bbox_inches="tight")
+    bottom = min(a.get_position().y0 for a in fig.axes)
+    y = bottom - 0.6 / fig.get_figheight()  # about 0.6 in below the lowest axes
+    fig.text(0.0, y, _footer(), ha="left", va="top", fontsize=7.5, color=MUTED, linespacing=1.4)
+    fig.savefig(path, dpi=110, bbox_inches="tight", pil_kwargs={"optimize": True})
     plt.close(fig)
     return path
 
@@ -123,20 +135,22 @@ def plot_quintile_cumulative(monthly: pd.DataFrame) -> Path:
 
 
 def plot_strategy_vs_spy(monthly: pd.DataFrame) -> Path:
-    """Q1 and long-short vs SPY: cumulative growth with drawdown panel."""
+    """Q1, long-short, equal-weight universe and SPY: cumulative growth with drawdown panel."""
     series = {"Q1": (monthly["Q1_net"], BLUE), "Long-short": (monthly["LS_net"], ORANGE),
+              "Equal-weight universe": (monthly["EW_net"], INK2),
               "SPY": (monthly["SPY"], SPY_COLOR)}
     fig, (ax, dd) = plt.subplots(2, 1, figsize=(9, 6.2), sharex=True,
                                  gridspec_kw={"height_ratios": [2.3, 1], "hspace": 0.08})
     ends, colors = {}, {}
     for name, (r, c) in series.items():
         cum = (1 + r.fillna(0)).cumprod()
-        ax.plot(cum.index, cum, color=c, label=name)
-        dd.plot(cum.index, cum / cum.cummax() - 1, color=c, lw=1.2)
+        style = "--" if name.startswith("Equal") else "-"
+        ax.plot(cum.index, cum, color=c, label=name, ls=style)
+        dd.plot(cum.index, cum / cum.cummax() - 1, color=c, lw=1.2, ls=style)
         ends[name], colors[name] = cum.iloc[-1], c
     _label_ends(ax, ends, colors)
-    ax.legend(loc="upper left", ncol=3)
-    ax.set_title("Strategy vs SPY (net of costs)")
+    ax.legend(loc="upper left", ncol=2)
+    ax.set_title("Strategy vs equal-weight universe and SPY (net of costs)")
     ax.set_ylabel("Growth of $1")
     dd.set_ylabel("Drawdown")
     _pct_axis(dd)
