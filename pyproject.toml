@@ -1,0 +1,21 @@
+[project]
+name = "finance-equity-scanner"
+version = "0.1.0"
+description = "Multi-factor S&P 500 equity screener and backtest"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "BLE", "C4", "RUF"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff.lint.per-file-ignores]
+# Broad catches here are deliberate: yfinance raises many exception types, and one bad
+# ticker should be skipped and logged, not stop the run.
+"src/data_loader.py" = ["BLE001"]
