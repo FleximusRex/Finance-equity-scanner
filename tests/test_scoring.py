@@ -19,7 +19,7 @@ def test_inverted_factor_rewards_low_values() -> None:
 
 
 def test_winsorize_clips_outliers() -> None:
-    df = pd.DataFrame({"x": list(range(99)) + [1e6]}, dtype=float)
+    df = pd.DataFrame({"x": [*range(99), 1e6]}, dtype=float)
     w = winsorize(df, (0.01, 0.99))
     assert w["x"].max() < 1e6 and w["x"].max() == df["x"].quantile(0.99)
 

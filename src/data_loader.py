@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import logging
 import time
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Callable
+from typing import Any
 
 import pandas as pd
 import yfinance as yf
@@ -37,7 +38,7 @@ def _retry(fn: Callable[..., Any], *args: Any, tries: int = 3, delay: float = 1.
     for i in range(tries):
         try:
             return fn(*args)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:  # yfinance raises many unrelated exception types
             if i == tries - 1:
                 raise
             log.debug("retry %d/%d after %s", i + 1, tries, e)
@@ -66,7 +67,7 @@ def load_prices(tickers: list[str], start: str = config.START_DATE,
         log.info("downloading prices for %d tickers", len(missing))
         try:
             new = _retry(_download_prices, missing, start, end)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:  # keep whatever is already cached if the download fails
             log.error("price download failed: %s", e)
             new = pd.DataFrame()
         failed = sorted(set(missing) - set(new.columns))
@@ -90,7 +91,7 @@ def _fetch_info(ticker: str) -> dict[str, Any]:
 def _safe_info(ticker: str) -> dict[str, Any] | None:
     try:
         return _retry(_fetch_info, ticker)
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:  # one bad ticker must not stop the whole run
         log.warning("skip %s fundamentals: %s", ticker, e)
         return None
 
@@ -103,7 +104,7 @@ def load_fundamentals(tickers: list[str]) -> pd.DataFrame:
     if missing:
         log.info("downloading fundamentals for %d tickers", len(missing))
         with ThreadPoolExecutor(max_workers=8) as ex:
-            rows = dict(zip(missing, ex.map(_safe_info, missing)))
+            rows = dict(zip(missing, ex.map(_safe_info, missing), strict=True))
         new = pd.DataFrame.from_dict({t: r for t, r in rows.items() if r}, orient="index")
         if not new.empty:
             num = new.columns.difference(TEXT_FIELDS)

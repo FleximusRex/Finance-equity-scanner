@@ -44,7 +44,8 @@ def price_factors(prices: pd.DataFrame, benchmark: str = config.BENCHMARK,
         r = rets.iloc[-TRADING_DAYS:]
         b = prices[benchmark].ffill(limit=5).pct_change(fill_method=None).iloc[-TRADING_DAYS:]
         mask = r.notna() & b.notna().to_numpy()[:, None]
-        rb = pd.DataFrame(np.where(mask, b.to_numpy()[:, None], np.nan), index=r.index, columns=r.columns)
+        rb = pd.DataFrame(np.where(mask, b.to_numpy()[:, None], np.nan),
+                          index=r.index, columns=r.columns)
         r = r.where(mask)
         n = mask.sum()
         cov = ((r - r.mean()) * (rb - rb.mean())).sum() / (n - 1)
