@@ -5,15 +5,23 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CACHE_DIR = ROOT / "data" / "cache"
 
-# "test50" = UNIVERSE below; "sp500" = current S&P 500 list from Wikipedia (cached).
-# Override per run with env var, e.g. UNIVERSE_MODE=test50 python -m src.backtest
-UNIVERSE_MODE = os.getenv("UNIVERSE_MODE", "sp500")
-if UNIVERSE_MODE not in ("test50", "sp500"):
-    raise ValueError(f"UNIVERSE_MODE must be 'test50' or 'sp500', got {UNIVERSE_MODE!r}")
+UNIVERSE_MODES = ("sp500", "test50")  # test50 = UNIVERSE below; sp500 = Wikipedia list (cached)
+UNIVERSE_MODE = os.getenv("UNIVERSE_MODE", "sp500")  # fallback when --universe is not given
+OUTPUTS_DIR = CHARTS_DIR = RANKINGS_DIR = ROOT
 
-OUTPUTS_DIR = ROOT / "outputs" / UNIVERSE_MODE
-CHARTS_DIR = OUTPUTS_DIR / "charts"
-RANKINGS_DIR = OUTPUTS_DIR / "rankings"
+
+def set_universe(mode: str) -> None:
+    """Select the universe and point the output folders at outputs/<mode>/."""
+    global UNIVERSE_MODE, OUTPUTS_DIR, CHARTS_DIR, RANKINGS_DIR
+    if mode not in UNIVERSE_MODES:
+        raise ValueError(f"universe must be one of {UNIVERSE_MODES}, got {mode!r}")
+    UNIVERSE_MODE = mode
+    OUTPUTS_DIR = ROOT / "outputs" / mode
+    CHARTS_DIR = OUTPUTS_DIR / "charts"
+    RANKINGS_DIR = OUTPUTS_DIR / "rankings"
+
+
+set_universe(UNIVERSE_MODE)
 
 START_DATE = "2014-01-01"
 END_DATE: str | None = None  # None = latest available

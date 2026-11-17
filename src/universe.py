@@ -31,8 +31,9 @@ def sp500_tickers() -> list[str]:
     return df["ticker"].tolist()
 
 
-def get_universe(mode: str = config.UNIVERSE_MODE) -> list[str]:
-    """Ticker list for the configured universe mode."""
+def get_universe(mode: str | None = None) -> list[str]:
+    """Ticker list for `mode` (default: the configured universe)."""
+    mode = mode or config.UNIVERSE_MODE
     if mode == "test50":
         return list(config.UNIVERSE)
     if mode == "sp500":

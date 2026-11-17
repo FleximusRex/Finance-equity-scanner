@@ -1,12 +1,16 @@
-"""Build the current multi-factor ranking: python -m src.rank"""
+"""Build the current multi-factor ranking.
+
+Run: python -m src.rank [--universe {sp500,test50}]
+"""
 from __future__ import annotations
 
 import logging
 import sys
+from collections.abc import Sequence
 
 import pandas as pd
 
-from src import config
+from src import cli, config
 from src.data_loader import load_fundamentals, load_prices
 from src.factors import compute_factors
 from src.scoring import score
@@ -26,7 +30,7 @@ COLUMNS = {
 def build_rankings(tickers: list[str] | None = None) -> pd.DataFrame:
     """Download (or load cached) data, compute factors and return the ranking table."""
     tickers = tickers or get_universe()
-    prices = load_prices(tickers + [config.BENCHMARK])
+    prices = load_prices([*tickers, config.BENCHMARK])
     fund = load_fundamentals(tickers)
     if prices.empty and fund.empty:
         raise RuntimeError("no price or fundamental data available")
@@ -42,9 +46,9 @@ def build_rankings(tickers: list[str] | None = None) -> pd.DataFrame:
     return df.sort_values("Composite", ascending=False, na_position="last").reset_index()
 
 
-def main() -> int:
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
-    logging.getLogger("yfinance").setLevel(logging.CRITICAL)
+def main(argv: Sequence[str] | None = None) -> int:
+    cli.parse_args("Build the current multi-factor ranking.", argv)
+    cli.setup_logging()
     try:
         df = build_rankings()
     except RuntimeError as e:

@@ -2,17 +2,19 @@
 from __future__ import annotations
 
 import logging
+import sys
+from collections.abc import Sequence
 from pathlib import Path
 
 import matplotlib
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
-import numpy as np  # noqa: E402
-import pandas as pd  # noqa: E402
-from matplotlib.colors import LinearSegmentedColormap  # noqa: E402
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from matplotlib.colors import LinearSegmentedColormap
 
-from src import config  # noqa: E402
+from src import cli, config
 
 log = logging.getLogger(__name__)
 
@@ -74,7 +76,7 @@ def plot_leaderboard(rank: pd.DataFrame, n: int = 20) -> Path:
     top = rank.dropna(subset=["Composite"]).nlargest(n, "Composite").iloc[::-1]
     fig, ax = plt.subplots(figsize=(8, 0.32 * len(top) + 1.2))
     ax.barh(top["Ticker"], top["Composite"], color=BLUE, height=0.7)
-    for y, (v, sec) in enumerate(zip(top["Composite"], top["Sector"].fillna(""))):
+    for y, (v, sec) in enumerate(zip(top["Composite"], top["Sector"].fillna(""), strict=True)):
         ax.text(v + 0.02, y, f"{v:.2f}  {sec}", va="center", fontsize=8, color=INK2)
     ax.axvline(0, color=AXIS, lw=0.8)
     ax.grid(axis="y", visible=False)
@@ -98,7 +100,7 @@ def plot_factor_heatmap(rank: pd.DataFrame, n: int = 20) -> Path:
     for s in ax.spines.values():
         s.set_visible(False)
     for (i, j), v in np.ndenumerate(data.to_numpy(dtype=float)):
-        ax.text(j, i, "–" if np.isnan(v) else f"{v:.1f}", ha="center", va="center",
+        ax.text(j, i, "-" if np.isnan(v) else f"{v:.1f}", ha="center", va="center",
                 fontsize=7.5, color=INK)
     fig.colorbar(im, ax=ax, fraction=0.04, pad=0.02).outline.set_visible(False)
     ax.set_title("Factor scores, top names (z-score)")
@@ -206,12 +208,18 @@ def make_all(rank: pd.DataFrame | None = None, monthly: pd.DataFrame | None = No
     for fn, data in jobs:
         try:
             paths.append(fn(data))
-        except Exception as e:  # noqa: BLE001
+        except (KeyError, ValueError, IndexError) as e:  # one bad chart should not stop the rest
             log.warning("chart %s failed: %s", fn.__name__, e)
     log.info("saved %d charts -> %s", len(paths), config.CHARTS_DIR)
     return paths
 
 
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+def main(argv: Sequence[str] | None = None) -> int:
+    cli.parse_args("Render the charts from the saved rankings and backtest CSVs.", argv)
+    cli.setup_logging()
     make_all()
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

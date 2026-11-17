@@ -1,4 +1,6 @@
-"""Monthly-rebalanced quintile backtest on price-based factors: python -m src.backtest
+"""Monthly-rebalanced quintile backtest on price-based factors.
+
+Run: python -m src.backtest [--universe {sp500,test50}]
 
 Known limitation: yfinance fundamentals are not point-in-time, so the historical
 backtest uses only momentum + low-vol. Universe is today's tickers (survivorship bias).
@@ -7,11 +9,12 @@ from __future__ import annotations
 
 import logging
 import sys
+from collections.abc import Sequence
 
 import numpy as np
 import pandas as pd
 
-from src import config
+from src import cli, config
 from src.data_loader import load_prices
 from src.factors import price_factors
 from src.performance import ic_stats, perf_stats, rank_ic
@@ -32,13 +35,13 @@ def rebalance_dates(index: pd.DatetimeIndex) -> pd.DatetimeIndex:
 
 
 def signals_through_time(prices: pd.DataFrame, dates: pd.DatetimeIndex) -> dict[str, pd.DataFrame]:
-    """Composite and signed single-factor signals per (date, ticker), using only data up to each date."""
+    """Composite and signed single-factor signals per (date, ticker), from data up to each date."""
     panels: dict[str, dict] = {k: {} for k in ["composite", *SINGLE_FACTORS]}
     for d in dates:
         try:
             pf = price_factors(prices, config.BENCHMARK, asof=d)
             sc = score(pf, categories=PRICE_CATEGORIES)
-        except Exception as e:  # noqa: BLE001
+        except (ValueError, KeyError, IndexError) as e:
             log.warning("skip %s: %s", d.date(), e)
             continue
         panels["composite"][d] = sc["composite"]
@@ -62,7 +65,7 @@ def _turnover(w: pd.DataFrame, fwd: pd.DataFrame) -> pd.Series:
 
 
 def backtest_signal(prices: pd.DataFrame, sig: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
-    """Monthly gross/net returns + turnover per quintile portfolio of `sig`, and its rank-IC series."""
+    """Monthly gross/net returns and turnover per quintile portfolio of `sig`, plus rank IC."""
     dates = rebalance_dates(prices.index)
     px_m = prices.ffill(limit=5).reindex(dates)
     fwd_all = (px_m.shift(-1) / px_m - 1).replace([np.inf, -np.inf], np.nan)
@@ -88,7 +91,9 @@ def backtest_signal(prices: pd.DataFrame, sig: pd.DataFrame) -> tuple[pd.DataFra
     out["LS_gross"] = out["Q1_gross"] - out["Q5_gross"]
     out["LS_turnover"] = out["Q1_turnover"] + out["Q5_turnover"]
     out["LS_net"] = out["LS_gross"] - 2 * out["LS_turnover"] * cost  # both legs pay costs
-    out["SPY"] = fwd_all[config.BENCHMARK].reindex(comp.index) if config.BENCHMARK in fwd_all else np.nan
+    out["SPY"] = np.nan
+    if config.BENCHMARK in fwd_all:
+        out["SPY"] = fwd_all[config.BENCHMARK].reindex(comp.index)
 
     monthly = pd.DataFrame(out)
     monthly.index = monthly.index + pd.offsets.MonthEnd(0)  # label = start of holding month
@@ -126,17 +131,18 @@ def summarize(monthly: pd.DataFrame, ic: pd.Series) -> tuple[pd.DataFrame, dict[
     """Performance table (rows = portfolios) and factor IC stats."""
     bench = monthly["SPY"]
     rows = {}
-    for p in QUINTILES + ["LS", "EW"]:
+    for p in [*QUINTILES, "LS", "EW"]:
         for kind in ("net", "gross"):
-            rows[f"{p}_{kind}"] = perf_stats(monthly[f"{p}_{kind}"], bench, monthly[f"{p}_turnover"])
+            r, to = monthly[f"{p}_{kind}"], monthly[f"{p}_turnover"]
+            rows[f"{p}_{kind}"] = perf_stats(r, bench, to)
     rows["SPY"] = perf_stats(bench, bench)
     return pd.DataFrame(rows).T, ic_stats(ic, monthly["LS_gross"])
 
 
-def main() -> int:
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
-    logging.getLogger("yfinance").setLevel(logging.CRITICAL)
-    prices = load_prices(get_universe() + [config.BENCHMARK])
+def main(argv: Sequence[str] | None = None) -> int:
+    cli.parse_args("Run the price-factor quintile backtest and single-factor tests.", argv)
+    cli.setup_logging()
+    prices = load_prices([*get_universe(), config.BENCHMARK])
     if prices.empty:
         log.error("no price data available")
         return 1
@@ -154,7 +160,8 @@ def main() -> int:
 
     show = ["Q1_net", "Q2_net", "Q3_net", "Q4_net", "Q5_net", "LS_net", "LS_gross", "EW_net", "SPY"]
     cols = ["CAGR", "AnnVol", "Sharpe", "MaxDD", "Beta", "Alpha", "InfoRatio", "AvgTurnover"]
-    log.info("universe=%s  %d months %s..%s", config.UNIVERSE_MODE, len(monthly), monthly.index[0].date(), monthly.index[-1].date())
+    log.info("universe=%s  %d months %s..%s", config.UNIVERSE_MODE, len(monthly),
+             monthly.index[0].date(), monthly.index[-1].date())
     print(table.loc[show, cols].round(3).to_string())
     print("  ".join(f"{k}={v:.3f}" for k, v in fstats.items() if k != "Months"))
 
