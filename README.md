@@ -39,7 +39,7 @@ python -m venv .venv && source .venv/bin/activate   # Python 3.11 or newer
 make setup
 ```
 
-`make setup` installs `requirements.txt` plus ruff. To skip installing anything, open the Colab notebook from the badge above.
+`make setup` installs `requirements.txt` plus ruff. To skip installing anything, open the Colab notebook from the badge above and choose Runtime, then Run all. It takes a minute or two and needs no restart.
 
 ## Usage
 
