@@ -55,7 +55,7 @@ def _save(fig: plt.Figure, name: str) -> Path:
     config.CHARTS_DIR.mkdir(parents=True, exist_ok=True)
     path = config.CHARTS_DIR / name
     bottom = min(a.get_position().y0 for a in fig.axes)
-    y = bottom - 0.6 / fig.get_figheight()  # about 0.6 in below the lowest axes
+    y = bottom - 0.6 / fig.get_figheight()
     fig.text(0.0, y, _footer(), ha="left", va="top", fontsize=7.5, color=MUTED, linespacing=1.4)
     fig.savefig(path, dpi=110, bbox_inches="tight", pil_kwargs={"optimize": True})
     plt.close(fig)
