@@ -15,21 +15,28 @@ def max_drawdown(r: pd.Series) -> float:
 
 
 def perf_stats(r: pd.Series, bench: pd.Series | None = None,
-               turnover: pd.Series | None = None) -> dict[str, float]:
-    """Annualized return/risk stats for a monthly return series (rf = 0)."""
+               turnover: pd.Series | None = None, rf: pd.Series | None = None,
+               excess: bool = False) -> dict[str, float]:
+    """Annualized return/risk stats for a monthly return series.
+
+    Sharpe, Sortino, beta and alpha use returns in excess of `rf` (0 if not given). Pass
+    excess=True for a long-short portfolio, whose return is already an excess return.
+    """
     r = r.dropna()
     n = len(r)
     if n < 2:
         return {}
+    rf = pd.Series(0.0, index=r.index) if rf is None else rf.reindex(r.index).fillna(0)
+    rx = r if excess else r - rf
     cagr = (1 + r).prod() ** (PPY / n) - 1
     vol = r.std() * np.sqrt(PPY)
-    downside = np.sqrt((r.clip(upper=0) ** 2).mean()) * np.sqrt(PPY)
+    downside = np.sqrt((rx.clip(upper=0) ** 2).mean()) * np.sqrt(PPY)
     mdd = max_drawdown(r)
     out = {
         "CAGR": cagr,
         "AnnVol": vol,
-        "Sharpe": r.mean() * PPY / vol if vol > 0 else np.nan,
-        "Sortino": r.mean() * PPY / downside if downside > 0 else np.nan,
+        "Sharpe": rx.mean() * PPY / (rx.std() * np.sqrt(PPY)) if rx.std() > 0 else np.nan,
+        "Sortino": rx.mean() * PPY / downside if downside > 0 else np.nan,
         "MaxDD": mdd,
         "Calmar": cagr / abs(mdd) if mdd < 0 else np.nan,
         "WinRate": (r > 0).mean(),
@@ -40,13 +47,14 @@ def perf_stats(r: pd.Series, bench: pd.Series | None = None,
         b = bench.reindex(r.index)
         ok = b.notna()
         rr, bb = r[ok], b[ok]
-        var = bb.var()
-        beta = rr.cov(bb) / var if var > 0 else np.nan
+        rrx, bbx = rx[ok], (b - rf)[ok]
+        var = bbx.var()
+        beta = rrx.cov(bbx) / var if var > 0 else np.nan
         active = rr - bb
         te = active.std() * np.sqrt(PPY)
         out |= {
             "Beta": beta,
-            "Alpha": (rr.mean() - beta * bb.mean()) * PPY,
+            "Alpha": (rrx.mean() - beta * bbx.mean()) * PPY,
             "TrackingError": te,
             "InfoRatio": active.mean() * PPY / te if te > 0 else np.nan,
         }
@@ -61,6 +69,16 @@ def ttest(x: pd.Series) -> tuple[float, float]:
         return np.nan, np.nan
     res = stats.ttest_1samp(x, 0.0)
     return float(res.statistic), float(res.pvalue)
+
+
+def holm_adjust(pvalues: pd.Series) -> pd.Series:
+    """Holm step-down adjusted p-values for testing several hypotheses at once."""
+    p = pvalues.dropna().sort_values()
+    m = len(p)
+    # The smallest p-value is multiplied by m, the next by m - 1, and so on.
+    scaled = p * (m - np.arange(m))
+    adjusted = scaled.cummax().clip(upper=1.0)
+    return adjusted.reindex(pvalues.index)
 
 
 def rank_ic(scores: pd.DataFrame, fwd: pd.DataFrame) -> pd.Series:
