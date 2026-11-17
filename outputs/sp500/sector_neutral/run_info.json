@@ -2,7 +2,7 @@
   "universe": "sp500",
   "sector_neutral": true,
   "as_of": "2026-11-16",
-  "git_commit": "94b881f",
+  "git_commit": "37aaba1",
   "tickers_ranked": 503,
   "tickers": 503,
   "months": 142,
