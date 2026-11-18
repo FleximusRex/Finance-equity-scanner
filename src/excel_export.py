@@ -8,6 +8,7 @@ from __future__ import annotations
 import logging
 import sys
 from collections.abc import Sequence
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -101,7 +102,9 @@ def _format_sheet(ws: Worksheet, default_format: str = "0.00") -> None:
         number_format = FORMATS.get(cell.value, default_format)
         widest = len(str(cell.value))
         for (value_cell,) in ws.iter_rows(min_row=2, min_col=col_idx, max_col=col_idx):
-            if isinstance(value_cell.value, (int, float)):
+            if isinstance(value_cell.value, datetime):
+                value_cell.number_format = "mmm yyyy"
+            elif isinstance(value_cell.value, (int, float)):
                 value_cell.number_format = number_format
             else:
                 widest = max(widest, len(str(value_cell.value or "")))
@@ -152,6 +155,8 @@ def write_workbook(path: Path, tables: dict[str, pd.DataFrame], info: dict) -> P
     path.parent.mkdir(parents=True, exist_ok=True)
     with pd.ExcelWriter(path, engine="openpyxl") as writer:
         for sheet, df in tables.items():
+            if "month" in df.columns:  # real dates, so Excel can sort and chart them
+                df = df.assign(month=pd.to_datetime(df["month"]))
             df.to_excel(writer, sheet_name=sheet, index=False)
             ws = writer.sheets[sheet]
             # Monthly returns are small decimals, so they read best as percentages.

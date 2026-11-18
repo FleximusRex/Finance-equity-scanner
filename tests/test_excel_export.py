@@ -50,6 +50,7 @@ def test_monthly_returns_are_percentages(tmp_path, tables) -> None:
     ws = load_workbook(write_workbook(tmp_path / "out.xlsx", tables, INFO))["Monthly Returns"]
     assert ws["B2"].number_format == "0.00%"
     assert ws["B2"].value == pytest.approx(0.012)
+    assert ws["A2"].is_date and ws["A2"].number_format == "mmm yyyy"
 
 
 def test_load_tables_skips_missing_files(tmp_path) -> None:
