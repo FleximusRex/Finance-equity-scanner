@@ -1,0 +1,11 @@
+{
+  "universe": "sp500",
+  "sector_neutral": false,
+  "as_of": "2026-11-16",
+  "git_commit": "37aaba1",
+  "tickers_ranked": 503,
+  "tickers": 503,
+  "months": 142,
+  "first_month": "2015-01",
+  "last_month": "2026-10"
+}

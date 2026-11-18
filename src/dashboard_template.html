@@ -373,7 +373,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
     <nav class="tabs" role="tablist" aria-label="Sections" id="tabs"></nav>
     <div class="switches">
       <div class="seg" id="seg-mode" role="group" aria-label="Detail level"><span class="thumb" aria-hidden="true"></span><button type="button" data-v="basic">Basic</button><button type="button" data-v="advanced">Advanced</button></div>
-      <div class="seg" id="seg-uni" role="group" aria-label="Stock universe"><span class="thumb" aria-hidden="true"></span><button type="button" data-v="sp500">S&amp;P 500</button><button type="button" data-v="test50">50 stocks</button></div>
+      <div class="seg" id="seg-uni" role="group" aria-label="Stock universe"><span class="thumb" aria-hidden="true"></span><button type="button" data-v="sp500">S&amp;P 500</button><button type="button" data-v="sp100">S&amp;P 100</button><button type="button" data-v="test50">50 stocks</button></div>
     </div>
   </div>
 </header>
@@ -426,14 +426,14 @@ const F = {
 };
 const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const ym = s => { const [y, m] = String(s).split("-").map(Number); return {y, m}; };
-const nextM = d => d.m === 12 ? {y: d.y + 1, m: 1} : {y: d.y, m: d.m + 1};
+const prevM = d => d.m === 1 ? {y: d.y - 1, m: 12} : {y: d.y, m: d.m - 1};
 const mlab = d => MON[d.m - 1] + " " + d.y;
 
 /* ---------------- data prep ---------------- */
 const objs = rec => rec ? rec.rows.map(r => Object.fromEntries(rec.cols.map((c, i) => [c, r[i]]))) : [];
 const colsOf = rec => { const o = {}; if (!rec) return o; rec.cols.forEach((c, i) => o[c] = rec.rows.map(r => r[i])); return o; };
-const UNI_NAME = {sp500: "S&P 500", test50: "50-stock set"};
-const UNI_THE = {sp500: "the S&P 500", test50: "the 50-stock test set"};
+const UNI_NAME = {sp500: "S&P 500", sp100: "S&P 100", test50: "50-stock set"};
+const UNI_THE = {sp500: "the S&P 500", sp100: "the S&P 100", test50: "the 50-stock test set"};
 const WATCH = new Set(DATA.watchlist || []);
 const U = {};
 for (const [k, d] of Object.entries(DATA.universes)) {
@@ -444,8 +444,8 @@ for (const [k, d] of Object.entries(DATA.universes)) {
   const T = Object.fromEntries(tests.map(r => [r.factor, r]));
   const M = colsOf(d.monthly);
   const med = Object.fromEntries(objs(d.sectorMedian).map(r => [r.Sector, r]));
-  const rm = (M.rebalance_month || []).map(ym);
-  const hold = rm.map(nextM);
+  const hold = (M.month || []).map(ym);
+  const rm = hold.map(prevM);
   const n = rows.filter(r => r.InUni).length;
   const sectors = [...new Set(rows.map(r => r.Sector))].sort();
   U[k] = {key: k, rows, by, S, tests, T, M, med, rm, hold, n, sectors, asof: d.asof};
@@ -460,7 +460,7 @@ const GL = {
   percentile: ["Percentile", "The share of stocks this one beats. The 90th percentile scores higher than 90% of the list."],
   composite: ["Composite score", "The weighted blend of five category scores: value 25%, quality 25%, momentum 25%, growth 15%, low vol 10%."],
   cagr: ["CAGR", "Compound annual growth rate: the steady yearly return that turns the starting amount into the ending amount."],
-  sharpe: ["Sharpe ratio", "Return per unit of risk: annual return divided by annual volatility. Higher is better; around 1 is good for stocks."],
+  sharpe: ["Sharpe ratio", "Return per unit of risk: annual return above the T-bill rate, divided by annual volatility. Higher is better; around 1 is good for stocks."],
   maxdd: ["Max drawdown", "The largest fall from a previous peak to a later low. It shows the worst loss an investor would have sat through."],
   drawdown: ["Drawdown", "How far a portfolio sits below its previous high point."],
   ic: ["Rank IC", "Rank information coefficient: the correlation between this month's scores and next month's returns. 0 means no link; about 0.05 is considered useful."],
@@ -806,7 +806,7 @@ function headline(u) {
 }
 R.overview = () => {
   const u = cur(), h = headline(u), S = u.S, q = k => S[k + "_net"]?.CAGR, spy = S.SPY?.CAGR;
-  const span = u.rm.length ? `${mlab(u.rm[0])} – ${mlab(u.rm[u.rm.length - 1])}` : "";
+  const span = u.hold.length ? `${mlab(u.hold[0])} – ${mlab(u.hold[u.hold.length - 1])}` : "";
   if (!basic()) return overviewAdv(u, h, span);
   const pos = Math.max(2, Math.min(98, ((h.ic ?? 0) + 0.1) / 0.2 * 100));
   const qs = [1, 2, 3, 4, 5].map(i => q("Q" + i));
@@ -878,7 +878,7 @@ function overviewAdv(u, h, span) {
     <div class="kpi"><div class="l">${T("longshort", "L/S CAGR")} (net)</div><div class="v">${countEl(ls.CAGR, "pct1", "als")}</div></div>
     <div class="kpi"><div class="l">Q1 ${T("sharpe")} (net)</div><div class="v">${countEl(u.S.Q1_net?.Sharpe, "n2", "ash")}</div></div>
   </div>
-  <section class="section"><h2>Backtest summary</h2><p class="sub">All portfolios, ${T("net")} and ${T("gross")} of costs. Rf = 0 for Sharpe and Sortino; beta and alpha vs SPY.</p>
+  <section class="section"><h2>Backtest summary</h2><p class="sub">All portfolios, ${T("net")} and ${T("gross")} of costs. Sharpe, Sortino, beta and alpha use returns above the 1-month T-bill rate; beta and alpha are vs SPY.</p>
   <div class="tablebox"><table aria-label="Backtest summary statistics">
     <thead><tr><th class="l stk" scope="col">Portfolio</th><th class="l" scope="col">Costs</th>${SUMCOLS.map(c => `<th scope="col">${c[3] ? T(c[3], c[1]) : c[1]}</th>`).join("")}</tr></thead>
     <tbody>${rows.map(({k, t, r}) => `<tr class="${t}"><td class="l stk" style="font-family:var(--sans);font-weight:${t === "gross" ? 400 : 500}">${PNAME[k]}</td><td class="l">${t ? `<span class="tag">${t}</span>` : ""}</td>${SUMCOLS.map(c => `<td>${F[c[2]](r[c[0]])}</td>`).join("")}</tr>`).join("")}</tbody>

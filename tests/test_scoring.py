@@ -1,6 +1,7 @@
 """Small unit tests for scoring and point-in-time factor computation."""
 import numpy as np
 import pandas as pd
+import pytest
 
 from src.factors import price_factors
 from src.scoring import FACTORS, score, winsorize, zscore
@@ -50,3 +51,32 @@ def test_metric_count_matches_documentation() -> None:
     counts = {cat: len(metrics) for cat, metrics in FACTORS.items()}
     assert counts == {"value": 3, "quality": 3, "momentum": 2, "low_vol": 2, "growth": 2}
     assert sum(counts.values()) == 12
+
+
+def test_sector_neutral_zscore_is_centred_within_each_sector() -> None:
+    # Tech values are ten times larger; within-sector z-scores should ignore that.
+    values = [10.0, 20.0, 30.0, 40.0, 50.0, 1.0, 2.0, 3.0, 4.0, 5.0]
+    df = pd.DataFrame({"x": values}, index=[f"T{i}" for i in range(10)])
+    sectors = pd.Series(["Tech"] * 5 + ["Energy"] * 5, index=df.index)
+    z = zscore(df, sectors)["x"]
+    assert abs(z.iloc[:5].mean()) < 1e-12 and abs(z.iloc[5:].mean()) < 1e-12
+    assert z.iloc[:5].tolist() == pytest.approx(z.iloc[5:].tolist())
+
+
+def test_small_sectors_fall_back_to_the_universe_zscore() -> None:
+    df = pd.DataFrame({"x": np.arange(8.0)}, index=[f"T{i}" for i in range(8)])
+    sectors = pd.Series(["Big"] * 5 + ["Tiny"] * 2 + [None], index=df.index)
+    z, plain = zscore(df, sectors)["x"], zscore(df)["x"]
+    assert z.iloc[5:].tolist() == pytest.approx(plain.iloc[5:].tolist())  # 2 names, and no sector
+    assert z.iloc[:5].tolist() != pytest.approx(plain.iloc[:5].tolist())
+
+
+def test_score_accepts_sectors() -> None:
+    f = pd.DataFrame({"mom_12_1": np.arange(10.0), "ret_6m": np.arange(10.0)},
+                     index=[f"T{i}" for i in range(10)])
+    sectors = pd.Series(["A"] * 5 + ["B"] * 5, index=f.index)
+    s = score(f, categories=["momentum"], sectors=sectors)
+    plain = score(f, categories=["momentum"])
+    # T4 is below T5 across the universe, but it is the best of sector A and T5 the worst of B.
+    assert plain.loc["T4", "momentum"] < plain.loc["T5", "momentum"]
+    assert s.loc["T4", "momentum"] > s.loc["T5", "momentum"]

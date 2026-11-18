@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.performance import ic_stats, max_drawdown, perf_stats, rank_ic, ttest
+from src.performance import holm_adjust, ic_stats, max_drawdown, perf_stats, rank_ic, ttest
 
 
 def test_max_drawdown_known_path() -> None:
@@ -39,6 +39,50 @@ def test_beta_and_alpha_against_benchmark() -> None:
     assert s["Beta"] == pytest.approx(2.0)
     assert s["Alpha"] == pytest.approx(0.001 * 12)
     assert s["InfoRatio"] > 0
+
+
+def test_sharpe_uses_returns_in_excess_of_the_risk_free_rate() -> None:
+    r = pd.Series([0.03, 0.01] * 6)
+    rf = pd.Series(0.005, index=r.index)
+    s = perf_stats(r, rf=rf)
+    vol = r.std() * np.sqrt(12)
+    assert s["Sharpe"] == pytest.approx((0.02 - 0.005) * 12 / vol)
+    assert s["Sharpe"] < perf_stats(r)["Sharpe"]
+    assert s["CAGR"] == perf_stats(r)["CAGR"]  # CAGR is a total return and does not change
+
+
+def test_long_short_returns_are_already_excess() -> None:
+    r = pd.Series([0.03, 0.01] * 6)
+    rf = pd.Series(0.005, index=r.index)
+    assert perf_stats(r, rf=rf, excess=True)["Sharpe"] == pytest.approx(perf_stats(r)["Sharpe"])
+
+
+def test_alpha_is_measured_on_excess_returns() -> None:
+    rng = np.random.default_rng(0)
+    rf = pd.Series(0.004, index=range(60))
+    bench = pd.Series(rng.normal(0.01, 0.04, 60))
+    r = rf + 1.5 * (bench - rf) + 0.002  # beta 1.5 and monthly alpha 20 bps over the T-bill
+    s = perf_stats(r, bench, rf=rf)
+    assert s["Beta"] == pytest.approx(1.5)
+    assert s["Alpha"] == pytest.approx(0.002 * 12)
+
+
+def test_holm_adjust_known_values() -> None:
+    p = pd.Series({"a": 0.01, "b": 0.04, "c": 0.03})
+    adj = holm_adjust(p)
+    # sorted: 0.01 x 3, 0.03 x 2, 0.04 x 1 = 0.03, 0.06, 0.04; then never allowed to decrease
+    assert adj["a"] == pytest.approx(0.03)
+    assert adj["c"] == pytest.approx(0.06)
+    assert adj["b"] == pytest.approx(0.06)
+
+
+def test_holm_adjust_caps_at_one_and_matches_statsmodels() -> None:
+    from statsmodels.stats.multitest import multipletests
+
+    p = pd.Series([0.565, 0.249, 0.098, 0.103, 0.897])
+    adj = holm_adjust(p)
+    assert adj.max() <= 1.0
+    assert adj.tolist() == pytest.approx(multipletests(p, method="holm")[1].tolist())
 
 
 def test_perf_stats_needs_two_observations() -> None:

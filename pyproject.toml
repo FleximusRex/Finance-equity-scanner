@@ -1,7 +1,7 @@
 [project]
 name = "finance-equity-scanner"
-version = "0.1.0"
-description = "Multi-factor S&P 500 equity screener and backtest"
+version = "0.2.0"
+description = "Multi-factor equity screener and backtest for the S&P 100 and S&P 500"
 requires-python = ">=3.11"
 
 [tool.ruff]
