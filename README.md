@@ -4,9 +4,13 @@
 [![Live dashboard](https://img.shields.io/badge/Live%20dashboard-Equity%20Factor%20Lab-2A78D6)](https://fleximusrex.github.io/Finance-equity-scanner/)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/FleximusRex/Finance-equity-scanner/blob/main/notebooks/multi_factor_equity_screener.ipynb)
 ![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
+![SQL: SQLite](https://img.shields.io/badge/SQL-SQLite-003B57?logo=sqlite&logoColor=white)
+![Excel export](https://img.shields.io/badge/Excel-export-217346)
 ![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey)
 
-I built a Python pipeline that ranks US large caps on five factor categories (value, quality, momentum, growth and low volatility), backtests the price-based factors over 142 holding months from Jan 2015 to Oct 2026, and exports the results to Excel. The factors did not predict returns. On the S&P 500 the top quintile beat SPY, but an equal-weight basket of the same stocks did most of that with no model at all. The Q1 minus Q5 long-short portfolio lost 3.7% a year, and its Fama-French alpha is -2.1% a year with a Newey-West t-stat of -1.10, which is indistinguishable from zero.
+I built a Python pipeline that ranks US large caps on five factor categories (value, quality, momentum, growth and low volatility), backtests the price-based factors over 142 holding months from Jan 2015 to Oct 2026, and exports the results to Excel and a SQLite database. The factors did not predict returns. On the S&P 500 the top quintile beat SPY, but an equal-weight basket of the same stocks did most of that with no model at all. The Q1 minus Q5 long-short portfolio lost 3.7% a year, and its Fama-French alpha is -2.1% a year with a Newey-West t-stat of -1.10, which is indistinguishable from zero.
+
+**Tools:** Python (pandas, NumPy, SciPy, statsmodels, matplotlib, Plotly), SQL (SQLite) and Excel (openpyxl).
 
 Data as of 16 Nov 2026. Details are in [docs/methodology.md](docs/methodology.md), and there is an [interactive dashboard](https://fleximusrex.github.io/Finance-equity-scanner/) and a [Colab notebook](notebooks/multi_factor_equity_screener.ipynb).
 
@@ -69,12 +73,13 @@ make setup
 ## Usage
 
 ```bash
-make all UNIVERSE=sp100   # ranking, backtest, sector-neutral run, charts and Excel for one universe
+make all UNIVERSE=sp100   # ranking, backtest, sector-neutral run, SQL, charts and Excel for one universe
 make dashboard            # builds docs/index.html from outputs/ (no downloads)
 
 make rank                 # current ranking, writes outputs/sp500/rankings/rankings.csv
 make backtest             # backtest, factor tests, Fama-French regression and robustness table
 make sector-neutral       # the same with z-scores within sector, in outputs/sp500/sector_neutral/
+make sql                  # SQLite database and the queries in sql/, results in outputs/sp500/sql_results/
 make charts               # charts in outputs/sp500/charts/
 make excel                # outputs/sp500/equity_screener_<as-of date>.xlsx
 make test                 # unit tests
@@ -98,6 +103,22 @@ The first run downloads and caches data in `data/cache/`. Each run writes `run_i
 
 `make excel` writes one workbook per universe with these sheets: Rankings (frozen header, number formats and a red-to-blue color scale on the factor scores), Backtest Summary, Factor Tests, FF Regression, Robustness, Sector Neutral, Monthly Returns and Notes (a short methodology and the as-of date). The S&P 500 file is [`outputs/sp500/equity_screener_2026-11-16.xlsx`](outputs/sp500/equity_screener_2026-11-16.xlsx). The Colab notebook builds the same file and downloads it.
 
+## SQL analysis
+
+`make sql` loads the rankings and backtest results into a SQLite database and runs the four queries in [`sql/`](sql/): a sector summary, the top stock in each sector (a `ROW_NUMBER()` window function), Q1 against the equal-weight basket by calendar year, and how often each quintile beat SPY and the basket. The results are saved as CSV files in `outputs/<universe>/sql_results/`.
+
+From [`04_quintile_hit_rates.sql`](sql/04_quintile_hit_rates.sql) on the S&P 500:
+
+| Portfolio | Months | Beat SPY | Beat equal-weight basket | Average monthly gap vs basket |
+|---|---|---|---|---|
+| Q1 | 142 | 55.6% | 54.2% | +0.11 points |
+| Q2 | 142 | 50.0% | 38.7% | -0.23 points |
+| Q3 | 142 | 52.1% | 38.7% | -0.23 points |
+| Q4 | 142 | 51.4% | 39.4% | -0.22 points |
+| Q5 | 142 | 55.6% | 52.1% | +0.21 points |
+
+Q5 has the larger average monthly gap, yet Q1 compounded to the higher CAGR (17.9% against 17.4%). Q5's volatility was 23.3% a year against Q1's 15.3%, and big swings drag a compounded return below its average monthly return. The top and bottom quintiles also beat the basket about equally often, which is what a ranking with no predictive power looks like.
+
 ## Repository structure
 
 ```
@@ -116,12 +137,14 @@ src/
   run_info.py        as-of date and run details saved next to the outputs
   visualization.py   charts
   excel_export.py    Excel workbook
+  database.py        loads the results into SQLite and runs the queries in sql/
   report.py          single-stock report
   dashboard.py       builds docs/index.html from outputs/ and the template
   dashboard_template.html  the dashboard's HTML, CSS and JS (edit this, not docs/index.html)
+sql/                 SQL queries over the results (sector summary, leaders, hit rates)
 tests/               unit tests, none of which use the network
 notebooks/           Colab notebook with saved outputs (S&P 100 run)
-outputs/<universe>/  rankings, backtest and factor tables, charts, Excel file
+outputs/<universe>/  rankings, backtest and factor tables, SQL results, charts, Excel file
 docs/                built dashboard (index.html, generated), preview image and methodology.md
 ```
 
