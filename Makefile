@@ -2,7 +2,7 @@
 UNIVERSE ?= sp500
 PYTHON ?= python
 
-.PHONY: setup test lint rank backtest sector-neutral charts excel all dashboard
+.PHONY: setup test lint rank backtest sector-neutral sql charts excel all dashboard
 
 setup:
 	$(PYTHON) -m pip install -r requirements.txt ruff
@@ -24,6 +24,10 @@ sector-neutral:
 	$(PYTHON) -m src.rank --universe $(UNIVERSE) --sector-neutral
 	$(PYTHON) -m src.backtest --universe $(UNIVERSE) --sector-neutral
 
+# Loads the results into SQLite and runs the queries in sql/ (outputs/<universe>/sql_results/).
+sql:
+	$(PYTHON) -m src.database --universe $(UNIVERSE)
+
 charts:
 	$(PYTHON) -m src.visualization --universe $(UNIVERSE)
 
@@ -31,7 +35,7 @@ excel:
 	$(PYTHON) -m src.excel_export --universe $(UNIVERSE)
 
 # Everything for one universe. Run `make dashboard` once after all universes are done.
-all: rank backtest sector-neutral charts excel
+all: rank backtest sector-neutral sql charts excel
 
 dashboard:
 	$(PYTHON) -m src.dashboard
