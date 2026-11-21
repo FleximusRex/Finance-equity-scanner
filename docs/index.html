@@ -55,19 +55,19 @@ button{font:inherit;color:inherit}
 .bar{display:flex;align-items:center;gap:12px;min-height:56px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
 .brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:16px;letter-spacing:-.01em;color:var(--ink);text-decoration:none;white-space:nowrap}
 .brand svg{width:24px;height:24px;flex:none}
-.tabs{display:flex;gap:4px;margin:0 auto}
-.tab{appearance:none;border:0;background:none;color:var(--muted);font:400 14px var(--sans);padding:4px 12px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;min-height:32px;white-space:nowrap;transition:color .16s var(--ease),background-color .16s var(--ease)}
+.tabs{display:flex;gap:2px;margin:0 auto}
+.tab{appearance:none;border:0;background:none;color:var(--muted);font:400 14px var(--sans);padding:4px 10px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;min-height:32px;white-space:nowrap;transition:color .16s var(--ease),background-color .16s var(--ease)}
 .tab:hover{color:var(--ink)}
 .tab svg{width:20px;height:20px;display:none}
 .tab .sm{display:none}
 .tab[aria-selected=true]{color:var(--ink);background:var(--chip);font-weight:500}
 .switches{display:flex;gap:8px}
 .seg{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--chip);border-radius:10px;padding:2px}
-.seg button{position:relative;z-index:1;border:0;background:none;font:500 13px var(--sans);color:var(--muted);padding:4px 12px;border-radius:8px;min-height:28px;cursor:pointer;white-space:nowrap;transition:color .16s var(--ease)}
+.seg button{position:relative;z-index:1;border:0;background:none;font:500 13px var(--sans);color:var(--muted);padding:4px 10px;border-radius:8px;min-height:28px;cursor:pointer;white-space:nowrap;transition:color .16s var(--ease)}
 .seg button:hover{color:var(--ink)}
 .seg button[aria-pressed=true]{color:var(--ink)}
 .seg .thumb{position:absolute;top:2px;bottom:2px;left:2px;width:calc((100% - 4px)/var(--n,2));background:var(--thumb);border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.08);transition:transform .2s var(--ease);transform:translateX(calc(100% * var(--i,0)))}
-@media (max-width:1279px){.tabs{order:3;width:100%;margin:0 -12px}.switches{margin-left:auto}}
+@media (max-width:1379px){.tabs{order:3;width:100%;margin:0 -10px}.switches{margin-left:auto}}
 
 /* ---------- layout ---------- */
 main.wrap{padding-top:48px;padding-bottom:80px;min-height:70vh}
@@ -353,7 +353,9 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
   .brand svg{width:24px;height:24px}
   .switches{width:100%;margin:0}
   .switches .seg{flex:1}
-  .seg button{padding:4px 8px}
+  .seg button{padding:4px 4px;font-size:12px}
+  .switches .seg:first-child{flex:0 0 auto}
+  .switches .seg:first-child button{padding:4px 10px}
   .tabs{position:fixed;left:0;right:0;bottom:0;z-index:60;margin:0;width:auto;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;background:var(--surface);border-top:1px solid var(--hairline);padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
   .tab{flex-direction:column;justify-content:center;gap:4px;font-size:12px;min-height:56px;padding:8px 0;border-radius:var(--rc)}
   .tab svg{display:block}
@@ -899,19 +901,19 @@ R.overview = () => {
 };
 const REPO = "https://github.com/FleximusRex/Finance-equity-scanner";
 function about(u, h) {
-  const y0 = u.rm[0]?.y, y1 = u.rm.at(-1)?.y;
+  const y0 = u.hold[0]?.y, y1 = u.hold.at(-1)?.y;
   return `<section class="section about" aria-labelledby="about-h">
     <div>
       <h2 id="about-h">About this project</h2>
       <p class="by">Sawyer Cross · Finance student, University of West Florida</p>
-      <p class="tx">I built a Python pipeline that ranks the S&amp;P 500 on five factor categories and tests whether the price-based factors predicted next-month returns from ${y0} to ${y1}. They did not. This dashboard reports that result as it is, along with the biases that flatter the raw numbers.</p>
+      <p class="tx">I built a Python pipeline that ranks US large caps on five factor categories and tests whether the price-based factors predicted next-month returns from ${y0} to ${y1}. They did not, on the S&amp;P 500 or the S&amp;P 100. This dashboard reports that result as it is, along with the biases that flatter the raw numbers.</p>
       <div class="links"><a href="${REPO}/blob/main/docs/methodology.md">Methodology</a><a href="${REPO}">Source code</a><a href="https://colab.research.google.com/github/FleximusRex/Finance-equity-scanner/blob/main/notebooks/multi_factor_equity_screener.ipynb">Colab notebook</a><a href="https://github.com/FleximusRex">GitHub profile</a></div>
     </div>
     <dl>
       <div><dt>Question</dt><dd>Do momentum and low-volatility scores predict next month's returns?</dd></div>
       <div><dt>Sample</dt><dd>${F.int(u.n)} stocks, ${F.int(h.months)} monthly rebalances, 10 bps cost per side</dd></div>
-      <div><dt>Method</dt><dd>Quintile portfolios, rank IC with a t-test, single-factor tests</dd></div>
-      <div><dt>Built with</dt><dd>Python, pandas, NumPy, SciPy, yfinance; unit tests run in CI</dd></div>
+      <div><dt>Method</dt><dd>Quintile portfolios, rank IC with Holm-adjusted p-values, Fama-French five-factor plus momentum regressions with Newey-West t-stats</dd></div>
+      <div><dt>Built with</dt><dd>Python, pandas, SciPy, statsmodels, yfinance; Excel export; unit tests run in CI</dd></div>
       <div><dt>Looking for</dt><dd>Finance internship roles</dd></div>
     </dl>
   </section>`;
