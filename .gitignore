@@ -11,6 +11,9 @@ venv/
 data/cache/*
 !data/cache/.gitkeep
 
+# SQLite files are rebuilt from the CSVs by `make sql`
+outputs/**/*.db
+
 # OS / editor
 .DS_Store
 .idea/

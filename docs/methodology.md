@@ -54,7 +54,7 @@ The sector labels come from today's Wikipedia table, not from history. A company
 - Statistics are CAGR, volatility, Sharpe and Sortino ratios, maximum drawdown, beta and alpha against SPY, information ratio, turnover and rank IC.
 - I also run the same backtest on each price factor alone and on the composite (`factor_tests.csv`).
 
-Data flow: `universe.py` picks the tickers, `data_loader.py` downloads and caches prices and fundamentals, `factors.py` turns them into raw metrics and `scoring.py` standardizes and combines them. `rank.py` writes the current ranking and `backtest.py` writes the backtest, factor tests, Fama-French regression and robustness table, using `performance.py`, `french.py` and `ff_regression.py`. `run_info.py` records the as-of date. `visualization.py`, `excel_export.py` and `dashboard.py` read the saved files and never download prices.
+Data flow: `universe.py` picks the tickers, `data_loader.py` downloads and caches prices and fundamentals, `factors.py` turns them into raw metrics and `scoring.py` standardizes and combines them. `rank.py` writes the current ranking and `backtest.py` writes the backtest, factor tests, Fama-French regression and robustness table, using `performance.py`, `french.py` and `ff_regression.py`. `run_info.py` records the as-of date. `visualization.py`, `excel_export.py`, `database.py` and `dashboard.py` read the saved files and never download prices.
 
 ### Partial final month
 
@@ -63,6 +63,10 @@ Version 0.1 counted a partial month as a full one. The price download ended on 5
 ### Risk-free rate
 
 Version 0.1 used a 0% risk-free rate. Sharpe, Sortino, beta and alpha now use excess returns: the monthly return minus the 1-month T-bill rate (the `RF` column in Kenneth French's data library). The French file ended in Sep 2026, so for October 2026 I use Yahoo's `^IRX` (the 13-week T-bill yield, in annualized percent). The yield at the end of September divided by 12 is October's rate, because a bill bought at the end of one month earns that yield over the next. The rate averaged 2.0% a year over the 142 months and was 0.34% for October 2026. The long-short portfolio is self-financing (the short pays for the long), so its return is already an excess return and nothing is subtracted. CAGR and maximum drawdown are total returns and do not change.
+
+### SQL queries
+
+`database.py` copies four result files into a SQLite database (`rankings`, `monthly_returns`, `backtest_summary` and `factor_tests` tables) and runs each file in [`sql/`](../sql/) in name order. The queries only read what the backtest already produced; they do not compute any of the statistics above. The sector labels in `rankings` are Yahoo's (for example "Healthcare"), not the GICS labels from Wikipedia that the sector-neutral option uses.
 
 ## Charts
 
