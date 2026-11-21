@@ -1,2 +1,4 @@
 docs/index.html linguist-generated
 src/dashboard_template.html linguist-detectable=false
+# The notebook is a report: most of its bytes are saved chart images, not code.
+notebooks/*.ipynb linguist-documentation
