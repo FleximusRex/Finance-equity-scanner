@@ -4,40 +4,44 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Equity Factor Lab</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='8' fill='%232A78D6'/%3E%3Crect x='7' y='16' width='3.2' height='6' rx='1.6' fill='%23fff'/%3E%3Crect x='12.4' y='11' width='3.2' height='11' rx='1.6' fill='%23fff' opacity='.85'/%3E%3Crect x='17.8' y='6' width='3.2' height='16' rx='1.6' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='7' fill='%230071E3'/%3E%3Crect x='7' y='16' width='3.2' height='6' rx='1.6' fill='%23fff'/%3E%3Crect x='12.4' y='11' width='3.2' height='11' rx='1.6' fill='%23fff' opacity='.85'/%3E%3Crect x='17.8' y='6' width='3.2' height='16' rx='1.6' fill='%23fff'/%3E%3C/svg%3E">
 <meta name="description" content="Equity Factor Lab: a multi-factor stock ranking and backtest of the S&P 500, explained for beginners and quants.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#FAFAFA;--surface:#FFFFFF;--ink:#171717;--muted:#525252;--faint:#737373;
-  --hairline:rgba(23,23,23,.08);--accent:#2A78D6;--accent-ink:#1F64B8;
-  --chip:#F4F4F5;--hover:#F4F4F5;--accent-soft:rgba(42,120,214,.08);
-  --q1:#2A78D6;--q2:#7FA9DE;--q3:#B4B4B8;--q4:#E9A27C;--q5:#E0662F;--ew:#5C5C62;--spy:#9A9AA2;
-  --warn:#A35A00;--axis:rgba(23,23,23,.28);--grid:rgba(23,23,23,.07);
-  --btn:#171717;--btn-ink:#FFFFFF;
-  --shadow-hover:0 8px 24px rgba(0,0,0,.06);
-  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  /* Apple-like: soft grey ground, borderless white cards, system type, one blue */
+  --bg:#F5F5F7;--surface:#FFFFFF;--ink:#1D1D1F;--muted:#515154;--faint:#6E6E73;
+  --hairline:rgba(0,0,0,.08);--accent:#0071E3;--accent-ink:#0066CC;
+  --chip:#E8E8ED;--hover:#F5F5F7;--accent-soft:rgba(0,113,227,.08);--thumb:#FFFFFF;
+  --q1:#0071E3;--q2:#7DB5F0;--q3:#C7C7CC;--q4:#F7B27A;--q5:#F56300;--ew:#6E6E73;--spy:#AEAEB2;
+  --warn:#B25000;--axis:rgba(0,0,0,.25);--grid:rgba(0,0,0,.06);
+  --btn:#0071E3;--btn-ink:#FFFFFF;
+  --shadow-hover:0 12px 32px rgba(0,0,0,.10);
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Inter","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:var(--sans);
   --ease:cubic-bezier(.22,1,.36,1);
-  --r:12px;--rc:8px;color-scheme:light;
+  --r:20px;--rc:10px;color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root{
-  --bg:#141415;--surface:#19191B;--ink:#EDEDED;--muted:#A1A1A6;--faint:#85858B;
-  --hairline:rgba(237,237,237,.08);--accent:#4C93E8;--accent-ink:#7DB2F0;
-  --chip:#232325;--hover:#1F1F21;--accent-soft:rgba(76,147,232,.12);
-  --q1:#4C93E8;--q2:#6F9AD0;--q3:#8A8A90;--q4:#D98A68;--q5:#E8642F;--ew:#B4B4BA;--spy:#77777D;
-  --warn:#F0A54A;--axis:rgba(237,237,237,.28);--grid:rgba(237,237,237,.07);
-  --btn:#EDEDED;--btn-ink:#141415;
-  --shadow-hover:0 8px 24px rgba(0,0,0,.4);color-scheme:dark;
+  --bg:#000000;--surface:#1C1C1E;--ink:#F5F5F7;--muted:#AEAEB2;--faint:#8E8E93;
+  --hairline:rgba(255,255,255,.10);--accent:#2997FF;--accent-ink:#2997FF;
+  --chip:#2C2C2E;--hover:#2C2C2E;--accent-soft:rgba(41,151,255,.14);--thumb:#636366;
+  --q1:#2997FF;--q2:#5E9FE0;--q3:#636366;--q4:#C98A5E;--q5:#FF9F0A;--ew:#D1D1D6;--spy:#8E8E93;
+  --warn:#FFB340;--axis:rgba(255,255,255,.28);--grid:rgba(255,255,255,.08);
+  --btn:#2997FF;--btn-ink:#000000;
+  --shadow-hover:0 12px 32px rgba(0,0,0,.5);color-scheme:dark;
 }}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-padding-top:120px}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.55 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.mono,.num,th,td,.kpi .v,.final .v,.take .big,.rrow .pv,.rrow .rk,.srank b,.cat .ch b,.cat .ch .z,.fcard .qq b,.meter .mh b,#tip b,.chart text,.icscale .mkl,.minibars b,.legend b,.space .info .zs{font-variant-numeric:tabular-nums!important}
+td.co,.mt td:first-child{font-variant-numeric:normal!important}
 h1,h2,h3,p{margin:0}
-b,strong{font-weight:500}
-a{color:var(--accent-ink)}
+b,strong{font-weight:600}
+a{color:var(--accent-ink);text-decoration:none}
+a:hover{text-decoration:underline}
 button{font:inherit;color:inherit}
 .mono,.num,table{font-family:var(--mono);font-variant-numeric:tabular-nums}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
@@ -47,58 +51,58 @@ button{font:inherit;color:inherit}
 .skip:focus{left:8px}
 
 /* ---------- top bar ---------- */
-.top{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--hairline)}
-.bar{display:flex;align-items:center;gap:12px;min-height:64px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
-.brand{display:flex;align-items:center;gap:8px;font-weight:500;font-size:16px;color:var(--ink);text-decoration:none;white-space:nowrap}
-.brand svg{width:28px;height:28px;flex:none}
-.tabs{display:flex;gap:4px;margin:0 auto}
-.tab{appearance:none;border:0;background:none;color:var(--muted);font:500 14px var(--sans);padding:8px 12px;border-radius:var(--rc);cursor:pointer;display:flex;align-items:center;gap:8px;min-height:36px;white-space:nowrap;transition:color .16s var(--ease),background-color .16s var(--ease)}
+.top{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 78%,transparent);-webkit-backdrop-filter:saturate(1.8) blur(20px);backdrop-filter:saturate(1.8) blur(20px);border-bottom:1px solid var(--hairline)}
+.bar{display:flex;align-items:center;gap:12px;min-height:56px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+.brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:16px;letter-spacing:-.01em;color:var(--ink);text-decoration:none;white-space:nowrap}
+.brand svg{width:24px;height:24px;flex:none}
+.tabs{display:flex;gap:2px;margin:0 auto}
+.tab{appearance:none;border:0;background:none;color:var(--muted);font:400 14px var(--sans);padding:4px 10px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;min-height:32px;white-space:nowrap;transition:color .16s var(--ease),background-color .16s var(--ease)}
 .tab:hover{color:var(--ink)}
 .tab svg{width:20px;height:20px;display:none}
 .tab .sm{display:none}
-.tab[aria-selected=true]{color:var(--ink);background:var(--chip);box-shadow:inset 0 0 0 1px var(--hairline)}
+.tab[aria-selected=true]{color:var(--ink);background:var(--chip);font-weight:500}
 .switches{display:flex;gap:8px}
-.seg{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--chip);border-radius:10px;padding:4px}
-.seg button{position:relative;z-index:1;border:0;background:none;font:500 13px var(--sans);color:var(--muted);padding:4px 12px;border-radius:6px;min-height:32px;cursor:pointer;white-space:nowrap;transition:color .16s var(--ease)}
+.seg{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--chip);border-radius:10px;padding:2px}
+.seg button{position:relative;z-index:1;border:0;background:none;font:500 13px var(--sans);color:var(--muted);padding:4px 10px;border-radius:8px;min-height:28px;cursor:pointer;white-space:nowrap;transition:color .16s var(--ease)}
 .seg button:hover{color:var(--ink)}
 .seg button[aria-pressed=true]{color:var(--ink)}
-.seg .thumb{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/var(--n,2));background:var(--surface);border-radius:6px;box-shadow:inset 0 0 0 1px var(--hairline);transition:transform .2s var(--ease);transform:translateX(calc(100% * var(--i,0)))}
-@media (max-width:1279px){.tabs{order:3;width:100%;margin:0 -12px}.switches{margin-left:auto}}
+.seg .thumb{position:absolute;top:2px;bottom:2px;left:2px;width:calc((100% - 4px)/var(--n,2));background:var(--thumb);border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.08);transition:transform .2s var(--ease);transform:translateX(calc(100% * var(--i,0)))}
+@media (max-width:1379px){.tabs{order:3;width:100%;margin:0 -10px}.switches{margin-left:auto}}
 
 /* ---------- layout ---------- */
-main.wrap{padding-top:40px;padding-bottom:72px;min-height:70vh}
+main.wrap{padding-top:48px;padding-bottom:80px;min-height:70vh}
 .panel{display:none}
 .panel.on{display:block}
 .enter{animation:enter .4s var(--ease)}
 @keyframes enter{from{opacity:.2;transform:translateY(8px)}to{opacity:1;transform:none}}
 .stack>*+*{margin-top:24px}
-.eyebrow{font:400 13px/16px var(--sans);color:var(--faint);margin-bottom:8px}
-h1{font-size:32px;line-height:1.15;font-weight:500;letter-spacing:-.01em;max-width:32ch}
-h2{font-size:18px;line-height:1.35;font-weight:500}
-h3{font-size:15px;font-weight:500}
-.lede{font-size:16px;line-height:1.6;color:var(--muted);max-width:62ch;margin-top:12px}
+.eyebrow{font:500 14px/20px var(--sans);color:var(--faint);margin-bottom:8px}
+h1{font-size:40px;line-height:1.1;font-weight:600;letter-spacing:-.02em;max-width:28ch;text-wrap:balance}
+h2{font-size:21px;line-height:1.25;font-weight:600;letter-spacing:-.01em}
+h3{font-size:17px;font-weight:600}
+.lede{font-size:19px;line-height:1.45;color:var(--muted);max-width:56ch;margin-top:12px}
 p{max-width:65ch}
 .muted{color:var(--muted)}
 .small{font-size:13px}
-.head{margin-bottom:32px}
-.card{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--r);padding:24px}
+.head{margin-bottom:40px}
+.card{background:var(--surface);border-radius:var(--r);padding:28px}
 .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
 .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px}
-.kpi{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--r);padding:16px 20px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.kpi{background:var(--surface);border-radius:var(--r);padding:20px 24px}
 .kpi .l{font-size:13px;line-height:16px;color:var(--muted)}
-.kpi .v{font:500 28px/1.2 var(--mono);margin-top:8px;font-variant-numeric:tabular-nums}
+.kpi .v{font:600 32px/1.1 var(--sans);letter-spacing:-.02em;margin-top:8px}
 .kpi .s{font-size:12px;line-height:16px;color:var(--faint);margin-top:4px}
-.section{margin-top:40px}
+.section{margin-top:56px}
 .section>h2{margin-bottom:4px}
-.section>.sub{color:var(--muted);margin-bottom:16px;font-size:14px}
-.chip{display:inline-flex;align-items:center;gap:8px;font:400 12px/16px var(--sans);padding:4px 8px;border-radius:6px;background:var(--chip);color:var(--ink);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+.section>.sub{color:var(--muted);margin-bottom:20px;font-size:15px}
+.chip{display:inline-flex;align-items:center;gap:8px;font:400 12px/16px var(--sans);padding:4px 8px;border-radius:8px;background:var(--hover);color:var(--muted);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
 .chip i{width:8px;height:8px;border-radius:50%;flex:none}
 .chip.wl{background:var(--accent-soft);color:var(--accent-ink)}
-.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:var(--rc);padding:8px 16px;min-height:44px;font:500 14px var(--sans);cursor:pointer;background:var(--btn);color:var(--btn-ink);transition:opacity .16s var(--ease),transform .16s var(--ease)}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:22px;padding:8px 20px;min-height:44px;font:500 15px var(--sans);cursor:pointer;background:var(--btn);color:var(--btn-ink);transition:opacity .16s var(--ease),transform .16s var(--ease)}
 .btn:hover{opacity:.88}
 .btn:active{transform:scale(.98)}
-.btn.ghost{background:var(--chip);color:var(--ink)}
+.btn.ghost{background:var(--hover);color:var(--ink);min-height:36px;font-size:13px;padding:4px 16px}
 .iconbtn{border:0;background:none;width:40px;height:40px;border-radius:var(--rc);cursor:pointer;color:var(--muted);display:inline-grid;place-items:center;transition:color .16s var(--ease),background-color .16s var(--ease)}
 .iconbtn:hover{background:var(--hover);color:var(--ink)}
 .iconbtn svg{width:18px;height:18px}
@@ -106,7 +110,7 @@ p{max-width:65ch}
 /* glossary terms + popover */
 button.term{background:none;border:0;padding:0;cursor:help;text-decoration:underline dotted;text-decoration-color:var(--faint);text-decoration-thickness:1.5px;text-underline-offset:4px;font:inherit;color:inherit;text-align:inherit;transition:color .16s var(--ease)}
 button.term:hover{text-decoration-color:var(--accent);color:var(--accent-ink)}
-#pop{position:fixed;z-index:120;max-width:min(300px,calc(100vw - 24px));background:var(--ink);color:var(--bg);border-radius:var(--rc);padding:12px 16px;font-size:13px;line-height:20px;box-shadow:var(--shadow-hover);display:none}
+#pop{position:fixed;z-index:120;max-width:min(300px,calc(100vw - 24px));background:var(--ink);color:var(--bg);border-radius:12px;padding:12px 16px;font-size:13px;line-height:20px;box-shadow:var(--shadow-hover);display:none}
 #pop b{display:block;font-size:13px;margin-bottom:4px}
 #pop.on{display:block;animation:pop .18s var(--ease)}
 @keyframes pop{from{opacity:0;transform:translateY(4px)}}
@@ -115,17 +119,20 @@ button.term:hover{text-decoration-color:var(--accent);color:var(--accent-ink)}
 
 /* teaching notes: quiet text blocks, no fill */
 .teach{border-top:1px solid var(--hairline);padding-top:16px}
-.teach .tl{font:400 13px/16px var(--sans);color:var(--accent-ink);margin-bottom:8px}
-.teach p{font-size:14px;line-height:22px;color:var(--muted)}
+.teach .tl{font:600 15px/20px var(--sans);color:var(--ink);margin-bottom:8px}
+.teach p{font-size:15px;line-height:24px;color:var(--muted)}
 .teach p b{color:var(--ink)}
 .teachgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px 32px}
 
 /* overview */
-.hero{padding:0}
-.hero h1{font-size:32px;max-width:none}
-.answer{display:flex;align-items:center;gap:16px;font-size:48px;line-height:1.1;font-weight:500;letter-spacing:-.02em;margin-top:8px}
-.answer svg{width:40px;height:40px;color:var(--faint);flex:none}
-.icscale{margin-top:40px;max-width:640px}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:48px;align-items:center}
+.hero h1{font-size:21px;line-height:1.25;letter-spacing:-.01em;color:var(--faint);max-width:none}
+.answer{font-size:80px;line-height:1;font-weight:600;letter-spacing:-.03em;margin-top:8px;text-wrap:balance}
+.herochart{background:var(--surface);border-radius:var(--r);padding:24px 24px 12px}
+.herochart .hl{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:12px}
+.herochart .hl b{font:600 15px var(--sans)}
+.herochart .hl span{font-size:13px;color:var(--faint)}
+.icscale{margin-top:48px;max-width:560px}
 .icscale .trk{position:relative;height:8px;border-radius:4px;display:grid;grid-template-columns:2fr 1fr 2fr;gap:4px}
 .icscale .trk span{background:var(--chip);border-radius:4px}
 .icscale .trk span:nth-child(2){background:var(--hairline)}
@@ -134,21 +141,21 @@ button.term:hover{text-decoration-color:var(--accent);color:var(--accent-ink)}
 .icscale .zl{display:grid;grid-template-columns:2fr 1fr 2fr;font-size:12px;line-height:16px;color:var(--faint);margin-top:12px;text-align:center}
 .icscale .zl span:first-child{text-align:left}.icscale .zl span:last-child{text-align:right}
 .take{display:flex;flex-direction:column;gap:12px}
-.take .n{font:400 13px/16px var(--sans);color:var(--faint)}
-.take .big{font:500 32px/1.1 var(--mono)}
+.take .n{font:500 13px/16px var(--sans);color:var(--faint)}
+.take .big{font:600 40px/1.1 var(--sans);letter-spacing:-.02em}
 .take .bl{font-size:13px;line-height:20px;color:var(--muted);margin-top:-8px}
-.take h3{font-size:16px;line-height:1.35;margin-top:4px}
-.take p{font-size:14px;line-height:22px;color:var(--muted)}
+.take h3{font-size:17px;line-height:1.3;margin-top:4px}
+.take p{font-size:15px;line-height:22px;color:var(--muted)}
 .minibars{display:flex;align-items:flex-end;gap:8px;height:56px}
 .minibars div{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
 .minibars i{display:block;width:100%;max-width:32px;border-radius:4px 4px 0 0;transform-origin:bottom;animation:growy .5s var(--ease) both}
 .minibars b{font:400 12px/16px var(--mono);color:var(--faint)}
 
 /* tables */
-.tablebox{overflow:auto;border-radius:var(--r);background:var(--surface);border:1px solid var(--hairline);max-width:100%;-webkit-overflow-scrolling:touch}
+.tablebox{overflow:auto;border-radius:var(--r);background:var(--surface);max-width:100%;-webkit-overflow-scrolling:touch}
 .tablebox.tall{max-height:70vh}
 table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
-th,td{padding:12px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--hairline)}
+th,td{padding:12px 16px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--hairline)}
 th{font:500 12px/16px var(--sans);color:var(--muted);background:var(--surface);position:sticky;top:0;z-index:2}
 th.l,td.l{text-align:left}
 tbody tr:last-child td{border-bottom:0}
@@ -170,7 +177,7 @@ td.co{max-width:220px;overflow:hidden;text-overflow:ellipsis;font-family:var(--s
 tr.gross td{color:var(--faint)}
 .tag{font:400 12px/16px var(--sans);padding:0 8px;border-radius:4px;background:var(--chip);color:var(--muted)}
 .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px}
-.controls input,.controls select{font:400 14px var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--hairline);border-radius:var(--rc);padding:0 12px;min-height:44px}
+.controls input,.controls select{font:400 15px var(--sans);color:var(--ink);background:var(--surface);border:1px solid transparent;border-radius:12px;padding:0 12px;min-height:44px}
 .controls input{flex:1 1 220px;min-width:0}
 .controls select{flex:1 1 150px;max-width:260px}
 .controls .count{font-size:13px;color:var(--faint);margin-left:auto}
@@ -182,7 +189,7 @@ tr.gross td{color:var(--faint)}
 .rrow:hover{background:var(--hover)}
 .rrow .rk{grid-area:rk;font:400 13px var(--mono);color:var(--faint)}
 .rrow .who{grid-area:who;display:flex;gap:8px;align-items:baseline;min-width:0}
-.rrow .tk{font:500 15px var(--mono)}
+.rrow .tk{font:600 15px var(--sans)}
 .rrow .co{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
 .rrow .meta{grid-area:meta;display:flex;gap:4px;flex-wrap:wrap;min-width:0}
 .rrow .sc{grid-area:sc;display:flex;align-items:center;gap:12px}
@@ -194,24 +201,24 @@ tr.gross td{color:var(--faint)}
 
 /* lookup */
 .combo{position:relative;max-width:560px}
-.combo input{width:100%;font:400 16px var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--hairline);border-radius:10px;padding:0 16px 0 44px;min-height:48px}
+.combo input{width:100%;font:400 16px var(--sans);color:var(--ink);background:var(--surface);border:1px solid transparent;border-radius:14px;padding:0 16px 0 44px;min-height:48px}
 .combo>svg{position:absolute;left:16px;top:16px;width:16px;height:16px;color:var(--faint);pointer-events:none}
-.combo ul{position:absolute;z-index:30;left:0;right:0;top:56px;margin:0;padding:4px;list-style:none;background:var(--surface);border-radius:12px;box-shadow:var(--shadow-hover);border:1px solid var(--hairline);max-height:340px;overflow:auto}
-.combo li{display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:8px;cursor:pointer;min-height:44px}
+.combo ul{position:absolute;z-index:30;left:0;right:0;top:56px;margin:0;padding:4px;list-style:none;background:var(--surface);border-radius:14px;box-shadow:var(--shadow-hover);border:1px solid var(--hairline);max-height:340px;overflow:auto}
+.combo li{display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:10px;cursor:pointer;min-height:44px}
 .combo li[aria-selected=true],.combo li:hover{background:var(--hover)}
-.combo li b{font:500 14px var(--mono);min-width:56px}
+.combo li b{font:600 14px var(--sans);min-width:56px}
 .combo li span{color:var(--muted);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
 .lk{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:24px;margin-top:24px;align-items:start}
 .lk .col{display:grid;gap:24px}
 .idh{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
-.idh .tk{font:500 28px/1.1 var(--mono)}
+.idh .tk{font:600 40px/1.1 var(--sans);letter-spacing:-.02em}
 .idh .co{color:var(--muted);font-size:15px;flex-basis:100%}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .gauge{display:block;width:100%;max-width:280px;margin:20px auto 0}
 .gauge .trackarc{stroke:var(--chip)}
 .gcap{text-align:center;font-size:14px;color:var(--muted);margin-top:8px}
 .srank{display:flex;justify-content:center;gap:8px;align-items:baseline;margin-top:16px;font-size:14px}
-.srank b{font:500 18px var(--mono)}
+.srank b{font:600 19px var(--sans)}
 .insum{margin-top:20px;padding-top:16px;border-top:1px solid var(--hairline);font-size:14px;line-height:22px}
 .cat+.cat{margin-top:20px}
 .cat .ch{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px}
@@ -230,11 +237,11 @@ tr.gross td{color:var(--faint)}
 .mt .cmp svg{width:12px;height:12px;vertical-align:-1px}
 
 /* charts */
-.chartcard{padding:24px 24px 16px}
+.chartcard{padding:28px 28px 20px}
 .chart{position:relative;width:100%;min-height:200px}
 .chart svg{display:block;overflow:visible;touch-action:pan-y}
 .chart text{font-family:var(--mono);font-size:11px;fill:var(--faint)}
-.chart .lab{fill:var(--ink);font-weight:500;font-size:12px;paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}
+.chart .lab{fill:var(--ink);font-weight:600;font-size:12px;paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}
 .chart .gridl{stroke:var(--grid);stroke-width:1}
 .chart .zero{stroke:var(--axis);stroke-width:1}
 .chart .xh{stroke:var(--faint);stroke-width:1;stroke-dasharray:3 3}
@@ -253,22 +260,22 @@ tr.gross td{color:var(--faint)}
 .legend .ring.sel{border-color:var(--accent)}
 .charthead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:8px 16px;margin-bottom:16px}
 .charthead h2{margin-bottom:4px}
-#tip{position:fixed;z-index:110;pointer-events:none;background:var(--surface);border:1px solid var(--hairline);box-shadow:var(--shadow-hover);border-radius:var(--rc);padding:8px 12px;font-size:12px;min-width:140px;display:none}
+#tip{position:fixed;z-index:110;pointer-events:none;background:var(--surface);border:1px solid var(--hairline);box-shadow:var(--shadow-hover);border-radius:12px;padding:8px 12px;font-size:12px;min-width:140px;display:none}
 #tip.on{display:block}
 #tip .th{color:var(--muted);margin-bottom:4px;font-family:var(--sans)}
 #tip .tr{display:grid;grid-template-columns:16px auto 1fr;gap:8px;align-items:center;line-height:1.7}
 #tip .tr i{width:16px;height:0;border-top:2px solid}
 #tip .tr b{font:500 13px var(--mono);font-variant-numeric:tabular-nums}
 #tip .tr span{color:var(--muted)}
-.finals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
-.final{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--r);padding:16px 20px}
+.finals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.final{background:var(--surface);border-radius:var(--r);padding:20px 24px}
 .final .l{display:flex;align-items:center;gap:8px;font-size:13px;line-height:16px;color:var(--muted)}
 .final .l i{width:16px;height:0;border-top:2px solid}
-.final .v{font:500 28px/1.2 var(--mono);margin-top:8px}
+.final .v{font:600 32px/1.1 var(--sans);letter-spacing:-.02em;margin-top:8px}
 .final .s{font-size:12px;line-height:16px;color:var(--faint);margin-top:4px}
 
 /* factor tests */
-.fcard h3{font-size:16px}
+.fcard h3{font-size:17px}
 .verdict{display:flex;align-items:center;gap:8px;font-weight:500;font-size:15px;margin-top:12px}
 .verdict svg{width:18px;height:18px;flex:none}
 .verdict.yes{color:var(--accent-ink)}
@@ -284,10 +291,10 @@ tr.gross td{color:var(--faint)}
 .meter .ml{position:relative;height:16px;font-size:12px;line-height:16px;color:var(--faint);margin-top:4px}
 .meter .ml span{position:absolute;transform:translateX(-50%);white-space:nowrap}
 .fcard .qq{display:flex;gap:16px;margin-top:16px;padding-top:12px;border-top:1px solid var(--hairline);font-size:13px;color:var(--muted)}
-.fcard .qq b{display:block;font:500 16px var(--mono);color:var(--ink)}
+.fcard .qq b{display:block;font:600 17px var(--sans);color:var(--ink)}
 
 /* factor space */
-.space{position:relative;height:580px;border-radius:var(--r);background:var(--surface);border:1px solid var(--hairline);overflow:hidden;touch-action:none}
+.space{position:relative;height:580px;border-radius:var(--r);background:var(--surface);overflow:hidden;touch-action:none}
 .space canvas{display:block;width:100%;height:100%;cursor:grab;outline:none}
 .space canvas:active{cursor:grabbing}
 .space canvas:focus-visible{box-shadow:inset 0 0 0 2px var(--accent)}
@@ -305,18 +312,35 @@ tr.gross td{color:var(--faint)}
 .space .info{position:absolute;left:12px;bottom:12px;width:300px;max-width:calc(100% - 24px);background:var(--surface);border:1px solid var(--hairline);border-radius:12px;box-shadow:var(--shadow-hover);padding:16px;display:none}
 .space .info.on{display:block;animation:pop .2s var(--ease)}
 .space .info .ih{display:flex;align-items:baseline;gap:8px;padding-right:32px}
-.space .info .ih b{font:500 18px var(--mono)}
+.space .info .ih b{font:600 19px var(--sans)}
 .space .info .ih span{color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .space .info .x{position:absolute;right:8px;top:8px}
 .space .info .zs{font:400 12px var(--mono);color:var(--faint);margin:8px 0 12px}
 .space .info .pc{font-size:14px;margin-top:8px}
 .space.flat{height:auto;touch-action:auto;padding:16px}
 
+/* about: the research-note byline */
+.about{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:32px 56px;background:var(--surface);border-radius:var(--r);padding:40px}
+.about h2{font-size:28px;line-height:1.15;letter-spacing:-.02em}
+.about .by{font-size:15px;color:var(--faint);margin-top:8px}
+.about p.tx{font-size:17px;line-height:1.5;color:var(--muted);margin-top:20px;max-width:52ch}
+.about .links{display:flex;flex-wrap:wrap;gap:8px 24px;margin-top:24px;font-size:15px}
+.about dl{margin:0;display:grid;gap:0;align-content:center}
+.about dl div{display:grid;grid-template-columns:104px minmax(0,1fr);gap:16px;padding:12px 0;border-top:1px solid var(--hairline);font-size:14px;line-height:20px}
+.about dl div:first-child{border-top:0;padding-top:0}
+.about dt{color:var(--faint)}
+.about dd{margin:0}
+
 /* footer */
 footer{border-top:1px solid var(--hairline);padding:24px 0 32px;color:var(--faint);font-size:13px}
 footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
 
 /* ---------- responsive ---------- */
+@media (max-width:999px){
+  .hero{grid-template-columns:1fr;gap:32px}
+  .answer{font-size:64px}
+  .about{grid-template-columns:1fr;padding:32px}
+}
 @media (max-width:899px){
   .grid3{grid-template-columns:1fr}
   .lk{grid-template-columns:1fr}
@@ -329,7 +353,9 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
   .brand svg{width:24px;height:24px}
   .switches{width:100%;margin:0}
   .switches .seg{flex:1}
-  .seg button{padding:4px 8px}
+  .seg button{padding:4px 4px;font-size:12px}
+  .switches .seg:first-child{flex:0 0 auto}
+  .switches .seg:first-child button{padding:4px 10px}
   .tabs{position:fixed;left:0;right:0;bottom:0;z-index:60;margin:0;width:auto;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;background:var(--surface);border-top:1px solid var(--hairline);padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
   .tab{flex-direction:column;justify-content:center;gap:4px;font-size:12px;min-height:56px;padding:8px 0;border-radius:var(--rc)}
   .tab svg{display:block}
@@ -338,19 +364,25 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
   main.wrap{padding-top:24px;padding-bottom:104px}
   td.co{max-width:152px}
   footer{padding-bottom:96px}
-  h1,.hero h1{font-size:28px}
-  .answer{font-size:36px;gap:12px}
-  .answer svg{width:32px;height:32px}
-  .lede{font-size:15px}
+  h1{font-size:32px}
+  .hero h1{font-size:19px}
+  .answer{font-size:52px}
+  .lede{font-size:17px}
+  .about{padding:24px}
+  .about h2{font-size:24px}
+  .herochart{padding:16px 12px 8px}
+  .idh .tk{font-size:32px}
+  .take .big{font-size:32px}
   .grid2{grid-template-columns:1fr}
   .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   .kpi{padding:16px}
-  .kpi .v{font-size:24px}
-  .card{padding:16px}
+  .kpi .v{font-size:26px}
+  .card{padding:20px}
   .chartcard{padding:16px 12px 8px}
   .finals{gap:12px}
   .final{padding:16px}
   .final .v{font-size:24px}
+  .top{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--bg)}
   .space{height:min(68vh,472px)}
   .space .hint{display:none}
   .mbar{width:48px}
@@ -387,7 +419,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
 </main>
 <footer><div class="wrap">
   <span id="asof"></span>
-  <span>Data: Yahoo Finance via yfinance · <a href="https://github.com/FleximusRex/Finance-equity-scanner">Source code</a></span>
+  <span>Built by Sawyer Cross · Data: Yahoo Finance via yfinance · <a href="https://github.com/FleximusRex/Finance-equity-scanner">Source code</a></span>
   <span>Educational research, not investment advice.</span>
 </div></footer>
 <div id="pop" role="tooltip"></div>
@@ -698,6 +730,7 @@ function lineChart(el, o) {
   if (o.zero && !o.log) s += `<line class="zero" x1="${m.l}" x2="${m.l + iw}" y1="${Y(0)}" y2="${Y(0)}"/>`;
   xTicks(o.dates, iw).forEach(i => { s += `<text x="${X(i)}" y="${H - 8}" text-anchor="middle">${phone ? "’" + String(o.dates[i].y).slice(2) : o.dates[i].y}</text>`; });
   s += `<g clip-path="url(#${id})">`;
+  if (o.area && !o.log) { const a = o.series[0], base = (m.t + ih).toFixed(1); s += `<defs><linearGradient id="${id}a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${a.color};stop-opacity:.16"/><stop offset="1" style="stop-color:${a.color};stop-opacity:0"/></linearGradient></defs><path d="${pathOf(a.v, X, Y)}L${X(n - 1).toFixed(1)} ${base}L${X(0).toFixed(1)} ${base}Z" fill="url(#${id}a)" stroke="none"/>`; }
   o.series.forEach(sr => { s += `<path d="${pathOf(sr.v, X, Y)}" fill="none" style="stroke:${sr.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"${sr.dash ? ' stroke-dasharray="5 4"' : ""}/>`; });
   if (o.endLabels) {
     const L = o.series.map(sr => { let i = sr.v.length - 1; while (i > 0 && sr.v[i] == null) i--; return {sr, v: sr.v[i], y: Y(sr.v[i])}; }).sort((a, b) => a.y - b.y);
@@ -814,15 +847,24 @@ R.overview = () => {
   const qmax = Math.max(...qs.map(Math.abs));
   const beta = u.T.beta || {};
   const pctChance = Math.round((h.p ?? 0) * 100);
+  const gDates = u.rm.length ? [u.rm[0], ...u.hold] : [];
+  after(() => chartJob("#ov-growth", el => lineChart(el, {key: "ovgrowth", dates: gDates, endLabels: true, area: true, height: Math.round(Math.min(340, Math.max(240, el.clientWidth * 0.56))),
+    aria: "Growth of $10,000, net of costs: " + BT_SERIES.map(([k, c]) => `${SERIES[k].end} ${F.usd(growth(u, c).at(-1))}`).join(", ") + ". Use left and right arrow keys to read values.",
+    series: BT_SERIES.map(([k, c]) => ({...SERIES[k], v: growth(u, c)})), yFmt: F.usdk, yFmtEnd: F.usdk, yFmtTip: F.usd})));
   return `<div class="stack">
   <section class="hero">
-    <p class="eyebrow">The big question</p>
-    <h1>Did the model predict returns?</h1>
-    <p class="answer">${ico(h.reliable ? "yes" : "slash")}${h.reliable ? "Yes, reliably" : "Not reliably"}</p>
-    <p class="lede">The average ${T("ic")} was <b class="mono">${F.n3(h.ic)}</b>, where 0 means no link between scores and next month's returns. A ${T("pvalue")} of <b class="mono">${F.n2(h.p)}</b> means pure chance would produce a result this strong ${pctChance}% of the time.</p>
-    <div class="icscale" role="img" aria-label="Rank IC of ${F.n3(h.ic)} on a scale from minus 0.10 to plus 0.10; the no-link zone is between minus 0.02 and plus 0.02.">
-      <div class="trk"><span></span><span></span><span></span><div class="mkl" style="left:${pos}%">IC ${F.n3(h.ic)}</div><div class="mk" style="left:${pos}%"></div></div>
-      <div class="zl"><span>← Scores pointed the wrong way</span><span>No link</span><span>Scores worked →</span></div>
+    <div>
+      <h1>Did the model predict returns?</h1>
+      <p class="answer">${h.reliable ? "Yes, reliably" : "Not reliably"}</p>
+      <p class="lede">The average ${T("ic")} was <b>${F.n3(h.ic)}</b>, where 0 means no link between scores and next month's returns. A ${T("pvalue")} of <b>${F.n2(h.p)}</b> means pure chance would produce a result this strong ${pctChance}% of the time.</p>
+      <div class="icscale" role="img" aria-label="Rank IC of ${F.n3(h.ic)} on a scale from minus 0.10 to plus 0.10; the no-link zone is between minus 0.02 and plus 0.02.">
+        <div class="trk"><span></span><span></span><span></span><div class="mkl" style="left:${pos}%">IC ${F.n3(h.ic)}</div><div class="mk" style="left:${pos}%"></div></div>
+        <div class="zl"><span>← Scores pointed the wrong way</span><span>No link</span><span>Scores worked →</span></div>
+      </div>
+    </div>
+    <div class="herochart">
+      <div class="hl"><b>Growth of $10,000</b><span>${gDates.length ? mlab(gDates[0]) + " – " + mlab(gDates.at(-1)) : ""}, after costs</span></div>
+      <div class="chart" id="ov-growth"></div>
     </div>
   </section>
   <div class="kpis">
@@ -854,8 +896,28 @@ R.overview = () => {
     ${teach("Look-ahead bias", `Yahoo's company fundamentals are today's numbers, so using them for 2015 would be peeking at the future. The backtest therefore uses only price-based ${T("factor", "factors")} (momentum and low volatility), computed with data available on each date.`)}
     ${teach("What is a factor?", `A factor is a measurable trait, like how cheap a stock is or how much it has risen lately. This lab scores every stock on five of them, then checks whether high scorers went on to earn higher returns.`)}
   </section>
+  ${about(u, h)}
   </div>`;
 };
+const REPO = "https://github.com/FleximusRex/Finance-equity-scanner";
+function about(u, h) {
+  const y0 = u.hold[0]?.y, y1 = u.hold.at(-1)?.y;
+  return `<section class="section about" aria-labelledby="about-h">
+    <div>
+      <h2 id="about-h">About this project</h2>
+      <p class="by">Sawyer Cross · Finance student, University of West Florida</p>
+      <p class="tx">I built a Python pipeline that ranks US large caps on five factor categories and tests whether the price-based factors predicted next-month returns from ${y0} to ${y1}. They did not, on the S&amp;P 500 or the S&amp;P 100. This dashboard reports that result as it is, along with the biases that flatter the raw numbers.</p>
+      <div class="links"><a href="${REPO}/blob/main/docs/methodology.md">Methodology</a><a href="${REPO}">Source code</a><a href="https://colab.research.google.com/github/FleximusRex/Finance-equity-scanner/blob/main/notebooks/multi_factor_equity_screener.ipynb">Colab notebook</a><a href="https://github.com/FleximusRex">GitHub profile</a></div>
+    </div>
+    <dl>
+      <div><dt>Question</dt><dd>Do momentum and low-volatility scores predict next month's returns?</dd></div>
+      <div><dt>Sample</dt><dd>${F.int(u.n)} stocks, ${F.int(h.months)} monthly rebalances, 10 bps cost per side</dd></div>
+      <div><dt>Method</dt><dd>Quintile portfolios, rank IC with Holm-adjusted p-values, Fama-French five-factor plus momentum regressions with Newey-West t-stats</dd></div>
+      <div><dt>Built with</dt><dd>Python, pandas, SciPy, statsmodels, yfinance; Excel export; unit tests run in CI</dd></div>
+      <div><dt>Looking for</dt><dd>Finance internship roles</dd></div>
+    </dl>
+  </section>`;
+}
 const PNAME = {Q1: "Q1 · Top 20%", Q2: "Q2", Q3: "Q3", Q4: "Q4", Q5: "Q5 · Bottom 20%", LS: "Long–short Q1−Q5", EW: "Equal-weight", SPY: "SPY"};
 const SUMCOLS = [
   ["CAGR", "CAGR", "pct1", "cagr"], ["AnnVol", "Ann. vol", "pct1", "volatility"], ["Sharpe", "Sharpe", "n2", "sharpe"], ["Sortino", "Sortino", "n2", "sortino"],
@@ -884,7 +946,8 @@ function overviewAdv(u, h, span) {
     <tbody>${rows.map(({k, t, r}) => `<tr class="${t}"><td class="l stk" style="font-family:var(--sans);font-weight:${t === "gross" ? 400 : 500}">${PNAME[k]}</td><td class="l">${t ? `<span class="tag">${t}</span>` : ""}</td>${SUMCOLS.map(c => `<td>${F[c[2]](r[c[0]])}</td>`).join("")}</tr>`).join("")}</tbody>
   </table></div></section>
   <section class="section"><h2>Caveats</h2>
-  <p class="sub" style="margin-top:8px">• Fundamentals from yfinance are not point-in-time, so value, quality and growth appear only in today's ranking, never in the backtest (avoids ${T("lookahead")}).<br>• The universe is today's constituents, so ${T("survivorship")} inflates every long-only line; compare against equal-weight, not SPY.<br>• Metrics are ${T("winsor", "winsorized")} at 1%/99% before cross-sectional ${T("zscore", "z-scoring")}.</p></section>`;
+  <p class="sub" style="margin-top:8px">• Fundamentals from yfinance are not point-in-time, so value, quality and growth appear only in today's ranking, never in the backtest (avoids ${T("lookahead")}).<br>• The universe is today's constituents, so ${T("survivorship")} inflates every long-only line; compare against equal-weight, not SPY.<br>• Metrics are ${T("winsor", "winsorized")} at 1%/99% before cross-sectional ${T("zscore", "z-scoring")}.</p></section>
+  ${about(u, h)}`;
 }
 
 /* ---------------- 2. rankings ---------------- */
@@ -992,7 +1055,7 @@ function lookupBody() {
         <path class="trackarc" d="${gaugeArc}" fill="none" stroke-width="14" stroke-linecap="round"/>
         ${[20, 40, 60, 80].map(t => { const a = Math.PI * (1 - t / 100); return `<line x1="${100 + 70 * Math.cos(a)}" y1="${100 - 70 * Math.sin(a)}" x2="${100 + 64 * Math.cos(a)}" y2="${100 - 64 * Math.sin(a)}" style="stroke:var(--axis)" stroke-width="1.5"/>`; }).join("")}
         <path id="g-val" d="${gaugeArc}" fill="none" style="stroke:var(--q${r.Quintile || 3})" stroke-width="14" stroke-linecap="round" stroke-dasharray="${(L * pct / 100).toFixed(1)} ${L.toFixed(1)}"/>
-        <text x="100" y="86" text-anchor="middle" style="font:500 38px var(--mono);fill:var(--ink)" data-count="${pct}" data-fmt="int" data-key="${key}">${Math.round(pct)}</text>
+        <text x="100" y="86" text-anchor="middle" style="font:600 40px var(--sans);fill:var(--ink)" data-count="${pct}" data-fmt="int" data-key="${key}">${Math.round(pct)}</text>
         <text x="100" y="108" text-anchor="middle" style="font:500 11px var(--sans);fill:var(--muted)">percentile</text>
         <text x="20" y="116" text-anchor="middle" style="font:400 9px var(--mono);fill:var(--muted)">0</text><text x="180" y="116" text-anchor="middle" style="font:400 9px var(--mono);fill:var(--muted)">100</text>
       </svg>
@@ -1209,7 +1272,7 @@ R.backtest = () => {
   const qs = [1, 2, 3, 4, 5].map(i => u.S["Q" + i + "_net"]?.CAGR);
   const stair = qs.every((v, i) => i === 0 || v < qs[i - 1]);
   after(() => {
-    chartJob("#bt-growth", el => lineChart(el, {key: "growth" + (state.log ? "L" : ""), dates, log: state.log, endLabels: true, aria: `Growth of $10,000 from ${mlab(dates[0])} to ${mlab(dates.at(-1))}, net of costs: ` + finals.map(f => `${SERIES[f.k].end} ${F.usd(f.v)}`).join(", ") + ". Use left and right arrow keys to read values.",
+    chartJob("#bt-growth", el => lineChart(el, {key: "growth" + (state.log ? "L" : ""), dates, log: state.log, endLabels: true, area: true, aria: `Growth of $10,000 from ${mlab(dates[0])} to ${mlab(dates.at(-1))}, net of costs: ` + finals.map(f => `${SERIES[f.k].end} ${F.usd(f.v)}`).join(", ") + ". Use left and right arrow keys to read values.",
       series: BT_SERIES.map(([k, c]) => ({...SERIES[k], v: growth(u, c)})), yFmt: F.usdk, yFmtEnd: F.usdk, yFmtTip: F.usd}));
     chartJob("#bt-stairs", el => barChart(el, {aria: "Yearly return (CAGR, net) by quintile: " + qs.map((v, i) => `Q${i + 1} ${F.pct1(v)}`).join(", "), tipLabel: "CAGR, net",
       bars: qs.map((v, i) => ({label: "Q" + (i + 1), sub: i === 0 ? "Top 20%" : i === 4 ? "Bottom 20%" : "", subS: i === 0 ? "Top" : i === 4 ? "Bottom" : "", v, color: `var(--q${i + 1})`})),
