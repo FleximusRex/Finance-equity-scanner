@@ -1,8 +1,10 @@
 [project]
 name = "finance-equity-scanner"
-version = "0.2.0"
+version = "0.3.0"
 description = "Multi-factor equity screener and backtest for the S&P 100 and S&P 500"
 requires-python = ">=3.11"
+authors = [{ name = "Sawyer Cross" }]
+license = "MIT"
 
 [tool.ruff]
 line-length = 100

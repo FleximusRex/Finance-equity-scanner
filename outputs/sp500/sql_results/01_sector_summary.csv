@@ -1,0 +1,13 @@
+sector,stocks,avg_composite,stocks_in_q1,pct_in_q1
+Energy,21,0.46,12,57.1
+Healthcare,60,0.11,20,33.3
+Financial Services,71,0.06,19,26.8
+Technology,87,0.04,23,26.4
+Consumer Defensive,31,0.02,6,19.4
+Real Estate,30,-0.03,2,6.7
+Communication Services,22,-0.07,2,9.1
+Basic Materials,19,-0.07,4,21.1
+Consumer Cyclical,54,-0.08,9,16.7
+Industrials,76,-0.1,4,5.3
+Utilities,31,-0.22,0,0.0
+Unknown,1,-0.37,0,0.0

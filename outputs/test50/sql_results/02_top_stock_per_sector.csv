@@ -1,0 +1,12 @@
+sector,ticker,company,composite,momentum,low_vol,value,quality
+Healthcare,ABBV,AbbVie Inc.,0.98,1.24,0.82,-0.34,0.84
+Energy,COP,ConocoPhillips,0.74,1.36,0.68,0.97,-0.01
+Financial Services,MA,Mastercard Incorporated,0.43,0.63,0.47,-0.4,1.35
+Technology,NVDA,NVIDIA Corporation,0.29,-0.84,-1.59,-0.05,1.26
+Communication Services,VZ,Verizon Communications Inc.,0.25,-0.0,0.61,1.33,-0.26
+Consumer Defensive,KO,The Coca-Cola Company,0.23,0.96,1.09,-0.46,0.19
+Industrials,UNP,Union Pacific Corporation,0.2,0.6,0.59,0.05,-0.0
+Basic Materials,LIN,Linde plc,-0.05,0.05,0.97,-0.33,-0.1
+Real Estate,PLD,"Prologis, Inc.",-0.1,-0.54,0.54,-0.12,0.18
+Consumer Cyclical,MCD,McDonald's Corporation,-0.16,-0.86,0.5,0.11,0.21
+Utilities,DUK,Duke Energy Corporation,-0.16,-0.17,1.13,-0.34,-0.36
