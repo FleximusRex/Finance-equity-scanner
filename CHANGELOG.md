@@ -5,10 +5,11 @@
 ### Added
 
 - SQL analysis: `make sql` loads the results into a SQLite database and runs four queries in `sql/` (sector summary, top stock per sector, Q1 against the equal-weight basket by year, quintile hit rates). Results are saved in `outputs/<universe>/sql_results/`.
-- Author name in the dashboard footer, the notebook and `pyproject.toml`.
+- Author name in the notebook and `pyproject.toml`.
 
 ### Changed
 
+- Dashboard redesign: the headline answer sits beside a growth-of-$10,000 chart, a new About section lists the method, tools and author, the footer credits the author, and the README has a preview image.
 - GitHub's language statistics count the notebook as documentation, since most of its size is saved chart images.
 
 ## v0.2.0 (Nov 2026)
